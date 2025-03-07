@@ -7,15 +7,38 @@
     <link rel="stylesheet" href="styles/styles.css">
 </head>
 <body>
-<h1>Вход</h1>
-<form action="/acchandlers/login.php" method="POST">
-    <label for="username">Имя пользователя:</label>
-    <input type="text" id="username" name="username" required><br>
+<div class="container">
+    <h2>Вход</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="error-message"></p>
+    <a href="register.html">Not a member? Sign up</a>
+</div>
 
-    <label for="password">Пароль:</label>
-    <input type="password" id="password" name="password" required><br>
+<script>
+    async function login() {
+        let email = document.getElementById("email").value;
+        let password = document.getElementById("password").value;
 
-    <button type="submit">Войти</button>
-</form>
+        if (!email || !password) {
+            document.getElementById("error-message").innerText = "Fill in all the fields!";
+            return;
+        }
+
+        let response = await fetch('/dmuk-coursework/acchandlers/login.php', {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+        });
+
+        let result = await response.json();
+        document.getElementById("error-message").innerText = result.message;
+
+        if (result.success) {
+            window.location.href = result.redirect;
+        }
+    }
+</script>
 </body>
 </html>
