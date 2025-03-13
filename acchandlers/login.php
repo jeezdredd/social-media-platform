@@ -1,34 +1,46 @@
 <?php
-global $conn;
-session_start();
-//Requiring the database connection once.
+global $pdo;
 require_once '../db/database.php';
 
+session_set_cookie_params([
+    'lifetime' => 3600, // 1 час
+    'path' => '/',
+    'domain' => '',
+    'secure' => true, // Только по HTTPS
+    'httponly' => true, // Доступ только через HTTP, нельзя получить через JavaScript
+    'samesite' => 'Strict'
+]);
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+session_start();
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $email = trim($_POST["email"]);
+    $email = filter_var(trim($_POST["email"]), FILTER_SANITIZE_EMAIL);
     $password = trim($_POST["password"]);
 
-    if (empty($email) || empty($password)) {
-        echo json_encode(["success" => false, "message" => "Fill in all fields!"]);
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(["success" => false, "message" => "Некорректный email!"]);
         exit;
     }
 
-    // Проверяем пользователя в базе
-    $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows === 1) {
-        $user = $result->fetch_assoc();
-        if (password_verify($password, $user["password"])) {
-            $_SESSION["user_id"] = $user["id"];
-            $_SESSION["username"] = $user["username"];
-            echo json_encode(["success" => true, "message" => "Login success!", "redirect" => "dashboard.php"]);
-            exit;
-        }
+    if (empty($email) || empty($password)) {
+        echo json_encode(["success" => false, "message" => "Заполните все поля!"]);
+        exit;
     }
 
-    echo json_encode(["success" => false, "message" => "Incorrect email or password."]);
+    // Используем PDO
+    $stmt = $pdo->prepare("SELECT id, username, password FROM users WHERE email = ?");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($user && password_verify($password, $user["password"])) {
+        $_SESSION["user_id"] = $user["id"];
+        $_SESSION["username"] = $user["username"];
+        echo json_encode(["success" => true, "message" => "Вход выполнен!", "redirect" => "dashboard.php"]);
+        exit;
+    }
+
+    echo json_encode(["success" => false, "message" => "Неверный email или пароль."]);
 }
 ?>

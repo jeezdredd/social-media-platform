@@ -1,12 +1,13 @@
 <?php
-$host = 'localhost'; //host of the database (in our case local database MariaDB via XAMMP)
-$dbname = 'webapp'; //name of the database
-$username = 'root'; //username with the access to database
-$password = ''; //password of the user
+$host = 'localhost';
+$dbname = 'webapp';
+$username = 'root';
+$password = '';
 
-$conn = new mysqli($host, $username, $password, $dbname); //establishing connection to the database
-
-if ($conn->connect_error) {
-    die("Database connection error: " . $conn->connect_error); //in case of connection faults, show the error messsage
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Database connection error: " . $e->getMessage());
 }
 ?>

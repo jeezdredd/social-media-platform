@@ -1,38 +1,52 @@
 <?php
-global $conn;
+global $pdo;
 require_once '../db/database.php';
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $username = trim($_POST["username"]);
-    $email = trim($_POST["email"]);
+    $username = htmlspecialchars(trim($_POST["username"]));
+    $email = filter_var(trim($_POST["email"]), FILTER_SANITIZE_EMAIL);
     $password = trim($_POST["password"]);
 
     if (empty($username) || empty($email) || empty($password)) {
-        echo json_encode(["success" => false, "message" => "Fill in all the fields!"]);
+        echo json_encode(["success" => false, "message" => "Заполните все поля!"]);
         exit;
     }
 
-    $stmt = $conn->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
-    $stmt->bind_param("ss", $username, $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        echo json_encode(["success" => false, "message" => "Account with this username/email already exists!"]);
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(["success" => false, "message" => "Некорректный email!"]);
         exit;
     }
 
-    // Хеширование пароля
-    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+    try {
+        // Проверка на существующий email
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        if ($stmt->fetch()) {
+            echo json_encode(["success" => false, "message" => "Email уже зарегистрирован!"]);
+            exit;
+        }
 
-    // Вставка нового пользователя
-    $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $username, $email, $hashedPassword);
+        // Проверка на существующий username
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+        if ($stmt->fetch()) {
+            echo json_encode(["success" => false, "message" => "Имя пользователя занято!"]);
+            exit;
+        }
 
-    if ($stmt->execute()) {
-        echo json_encode(["success" => true, "message" => "Registration Successful!"]);
-    } else {
-        echo json_encode(["success" => false, "message" => "Registration Failed! Try again."]);
+        // Хешируем пароль
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+        // Записываем в БД
+        $stmt = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+        $stmt->execute([$username, $email, $hashedPassword]);
+
+        echo json_encode(["success" => true, "message" => "Регистрация успешна!", "redirect" => "login.html"]);
+    } catch (PDOException $e) {
+        echo json_encode(["success" => false, "message" => "Ошибка регистрации: " . $e->getMessage()]);
     }
 }
-
+?>
