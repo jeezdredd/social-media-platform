@@ -3,7 +3,6 @@ global $pdo;
 session_start();
 require_once "db/database.php";
 
-// Проверка аутентификации
 if (!isset($_SESSION["user_id"])) {
     header("Location: login.html");
     exit;
@@ -12,15 +11,12 @@ if (!isset($_SESSION["user_id"])) {
 $success_message = $_SESSION['success_message'] ?? null;
 $error_message = $_SESSION['error_message'] ?? null;
 
-// Очищаем сообщения после вывода
 unset($_SESSION['success_message'], $_SESSION['error_message']);
 
-// Получаем информацию о пользователе
 $stmtUser = $pdo->prepare("SELECT username, profile_pic FROM users WHERE id = ?");
 $stmtUser->execute([$_SESSION["user_id"]]);
 $user = $stmtUser->fetch(PDO::FETCH_ASSOC);
 
-// Получаем список постов
 $stmt = $pdo->query("SELECT posts.*, users.username, users.profile_pic FROM posts 
                      JOIN users ON posts.user_id = users.id 
                      ORDER BY posts.created_at DESC");

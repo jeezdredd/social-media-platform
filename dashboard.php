@@ -26,8 +26,8 @@ $profilePic = $user['profile_pic'] ?: 'upload/default.jpg';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет</title>
-    <link rel="stylesheet" href="styles/styles.css">
+    <title>Profile Page</title>
+    <link rel="stylesheet" href="styles/dashboard.css">
 </head>
 <body class="profile-page">
 
@@ -35,6 +35,7 @@ $profilePic = $user['profile_pic'] ?: 'upload/default.jpg';
 
 <div class="container">
     <h2>Welcome, <?php echo htmlspecialchars($user["username"]); ?>!</h2>
+
 
     <!-- Profile block -->
     <div class="profile-container">
