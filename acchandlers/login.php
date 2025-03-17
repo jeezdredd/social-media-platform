@@ -3,11 +3,11 @@ global $pdo;
 require_once '../db/database.php';
 
 session_set_cookie_params([
-    'lifetime' => 3600, // 1 час
+    'lifetime' => 3600,
     'path' => '/',
     'domain' => '',
-    'secure' => true, // Только по HTTPS
-    'httponly' => true, // Доступ только через HTTP, нельзя получить через JavaScript
+    'secure' => true,
+    'httponly' => true,
     'samesite' => 'Strict'
 ]);
 
@@ -43,4 +43,4 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     echo json_encode(["success" => false, "message" => "Неверный email или пароль."]);
 }
-?>
+

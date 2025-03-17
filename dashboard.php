@@ -6,9 +6,8 @@ if (!isset($_SESSION["user_id"])) {
     exit;
 }
 
-require_once "db/database.php"; // Подключаем PDO
+require_once "db/database.php";
 
-// Получаем данные пользователя
 $stmt = $pdo->prepare("SELECT username, profile_pic FROM users WHERE id = ?");
 $stmt->execute([$_SESSION["user_id"]]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -19,7 +18,6 @@ if (!$user) {
     exit;
 }
 
-// Определяем аватар (если нет, используем стандартное изображение)
 $profilePic = $user['profile_pic'] ?: 'upload/default.jpg';
 ?>
 
@@ -31,41 +29,77 @@ $profilePic = $user['profile_pic'] ?: 'upload/default.jpg';
     <title>Личный кабинет</title>
     <link rel="stylesheet" href="styles/styles.css">
 </head>
-<body>
+<body class="profile-page">
 
 
 
 <div class="container">
-    <h2>Добро пожаловать, <?php echo htmlspecialchars($user["username"]); ?>!</h2>
+    <h2>Welcome, <?php echo htmlspecialchars($user["username"]); ?>!</h2>
 
-    <!-- Блок профиля -->
+    <!-- Profile block -->
     <div class="profile-container">
-        <img src="<?= htmlspecialchars($profilePic ?: 'upload/default.png') ?>"
-             class="profile-pic"
-             alt="Фото профиля">
-        <form id="profilePicForm" enctype="multipart/form-data">
-            <input type="file" id="profilePic" name="profilePic">
-            <button type="submit" class="upload-btn">Загрузить фото</button>
-        </form>
-        <p id="uploadMessage"></p>
+        <img src="<?= htmlspecialchars($profilePic ?: 'upload/default.png') ?>" class="profile-pic" alt="Profile photo">
+        <div class="profile-buttons">
+            <button id="uploadPhotoBtn">Upload photo</button>
+            <button id="editProfileBtn">Edit profile</button>
+            <button id="logoutConfirmBtn">Logout</button>
+        </div>
     </div>
 
-    <p>Вы вошли в систему.</p>
-    <a href="acchandlers/logout.php" class="btn">Выйти</a>
-    <a href="posts.php" class="btn">Перейти в ленту постов</a>
+    <p>You have logged in.</p>
+    <a href="posts.php" class="btn btn-feed">Go to feed page</a>
+
+    <div id="logoutConfirmModal" class="modal">
+        <div class="modal-content">
+            <h3>Are you sure you want to logout?</h3>
+            <div class="modal-buttons">
+                <button id="confirmLogout">Logout</button>
+                <button id="cancelLogout">Abort</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Edit profile</h3>
+            <form action="acchandlers/update_profile.php" method="POST">
+                <label for="username">New username:</label>
+                <input type="text" id="username" name="username" value="<?= htmlspecialchars($user["username"]) ?>" required>
+
+                <label for="password">New password:</label>
+                <input type="password" id="password" name="password">
+
+                <button type="submit">Save changes/button>
+            </form>
+        </div>
+    </div>
+
+    <div id="uploadPhotoModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Upload new profile photo</h3>
+            <form id="profilePicForm" enctype="multipart/form-data">
+                <input type="file" id="profilePic" name="profilePic" required>
+                <button type="submit">Upload</button>
+            </form>
+            <p id="uploadMessage"></p>
+        </div>
+    </div>
+
+
+
+    <?php if (isset($_SESSION["update_success"])): ?>
+        <p class="success-message"><?= $_SESSION["update_success"] ?></p>
+        <?php unset($_SESSION["update_success"]); ?>
+    <?php elseif (isset($_SESSION["update_error"])): ?>
+        <p class="error-message"><?= $_SESSION["update_error"] ?></p>
+        <?php unset($_SESSION["update_error"]); ?>
+    <?php endif; ?>
+
 </div>
 
-<script>
-    // Загрузка аватара
-    document.getElementById("profilePicForm").addEventListener("submit", async function(event) {
-        event.preventDefault();
-        let formData = new FormData(this);
-        let response = await fetch("acchandlers/upload_profile.php", { method: "POST", body: formData });
-        let result = await response.json();
-        document.getElementById("uploadMessage").innerText = result.message;
-        if (result.success) location.reload();
-    });
-</script>
+<script src="js/profile_page.js"></script>
 
 </body>
 </html>

@@ -57,6 +57,146 @@ body {
     background: #c21d4b;
 }
 
+/* Profile Styles */
+.profile-pic {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    overflow: hidden;
+    display: block;
+    margin: 0 auto;
+}
+
+.btn-feed {
+    display: block;
+    margin: 20px auto;
+    text-align: center;
+    background: #1d9bf0;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background 0.3s ease;
+}
+
+.btn-feed:hover {
+    background: #0c7abf;
+}
+
+#logoutConfirmBtn {
+    background: #e0245e;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#logoutConfirmBtn:hover {
+    background: #c21d4b;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+}
+
+#confirmLogout {
+    background: #e0245e;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#confirmLogout:hover {
+    background: #c21d4b;
+}
+
+#cancelLogout {
+    background: #ccc;
+    color: black;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#cancelLogout:hover {
+    background: #bbb;
+}
+
+.profile-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#uploadPhotoBtn, #editProfileBtn {
+    background: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#uploadPhotoBtn:hover, #editProfileBtn:hover {
+    background: #0056b3;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    width: 300px;
+    margin: 15% auto;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+/* Кнопка закрытия */
+.close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: red;
+}
+
+
 /* Feed container */
 .feed-container {
     width: 600px;
@@ -81,6 +221,7 @@ body {
     height: 50px;
     border-radius: 50%;
     object-fit: cover;
+    overflow: hidden;
 }
 
 .post-input {
