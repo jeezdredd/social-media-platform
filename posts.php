@@ -21,6 +21,11 @@ $stmt = $pdo->query("SELECT posts.*, users.username, users.profile_pic FROM post
                      JOIN users ON posts.user_id = users.id 
                      ORDER BY posts.created_at DESC");
 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$stmt = $pdo->query("SELECT posts.*, users.username, users.profile_pic FROM posts 
+                     JOIN users ON posts.user_id = users.id 
+                     ORDER BY posts.created_at DESC");
+$posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -61,7 +66,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <div id="posts">
         <?php foreach ($posts as $post): ?>
-            <div class="post">
+            <div class="post" data-post-id="<?= $post['id'] ?>">
                 <div class="post-header">
                     <img src="<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar" alt="Profile picture">
                     <p><?= htmlspecialchars($post['username']) ?></p>
@@ -71,10 +76,18 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <img src="<?= htmlspecialchars($post['image']) ?>" class="post-image" alt="Post picture">
                 <?php endif; ?>
                 <div class="post-date"><?= $post['created_at'] ?></div>
+
+                <!-- Блок лайков -->
+                <button class="like-btn" data-post-id="<?= $post['id'] ?>">
+                    ❤️ <span class="like-count"><?= $post['likes_count'] ?></span>
+                </button>
             </div>
         <?php endforeach; ?>
     </div>
+
 </div>
+
+<script src="js/likes.js"></script>
 
 </body>
 </html>
