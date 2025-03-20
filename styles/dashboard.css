@@ -1,4 +1,7 @@
 /* Dashboard Styles */
+.body {
+    font-family: Arial, sans-serif;
+}
 
 .profile-page {
     display: flex;

@@ -71,7 +71,7 @@ $profilePic = $user['profile_pic'] ?: 'upload/default.jpg';
                 <label for="password">New password:</label>
                 <input type="password" id="password" name="password">
 
-                <button type="submit">Save changes/button>
+                <button type="submit">Save changes</button>
             </form>
         </div>
     </div>
