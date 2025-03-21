@@ -35,10 +35,19 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Лента постов</title>
     <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/comments.css">
+    <link rel="stylesheet" href="img/icon.jpg">
+    <link rel="stylesheet" href="styles/undo.css">
 </head>
 <body>
+<script>
+    const currentUserId = <?= json_encode($_SESSION['user_id']) ?>;
+    console.log("Current user id:", currentUserId);
+</script>
 
-<!-- Верхний навигационный блок -->
+<audio id="notifySound" src="sounds/notify.mp3" preload="auto"></audio>
+
+<!-- upper nav bar -->
 <div class="navbar">
     <div class="nav-left">
         <h2>Feed</h2>
@@ -47,11 +56,12 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <a href="dashboard.php" class="btn">Profile</a>
         <a href="#" class="btn">Messages</a>
         <a href="#" class="btn">Settings</a>
+        <button id="toggleNotifications" class="btn">Mute notifications</button>
         <a href="acchandlers/logout.php" class="btn btn-danger">Logout</a>
     </div>
 </div>
 
-<!-- Форма публикации поста -->
+<!-- publish post form -->
 <div class="feed-container">
     <div class="post-form">
         <img src="<?= htmlspecialchars($user['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar" alt="Аватар">
@@ -70,6 +80,9 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="post-header">
                     <img src="<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar" alt="Profile picture">
                     <p><?= htmlspecialchars($post['username']) ?></p>
+                    <?php if ($post['user_id'] == $_SESSION["user_id"]): ?>
+                        <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
+                    <?php endif; ?>
                 </div>
                 <p><?= htmlspecialchars($post['content']) ?></p>
                 <?php if (!empty($post['image'])): ?>
@@ -77,10 +90,38 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <?php endif; ?>
                 <div class="post-date"><?= $post['created_at'] ?></div>
 
-                <!-- Блок лайков -->
+                <!-- likes button -->
                 <button class="like-btn" data-post-id="<?= $post['id'] ?>">
                     ❤️ <span class="like-count"><?= $post['likes_count'] ?></span>
                 </button>
+
+                <!-- comments section -->
+                <div class="comments" id="comments-<?= $post['id'] ?>">
+                    <?php
+                    $stmtComments = $pdo->prepare("SELECT c.*, u.username, u.profile_pic FROM comments c JOIN users u ON c.user_id = u.id WHERE c.post_id = ? ORDER BY c.created_at ASC");
+                    $stmtComments->execute([$post['id']]);
+                    $comments = $stmtComments->fetchAll(PDO::FETCH_ASSOC);
+                    foreach ($comments as $comment):
+                        ?>
+                        <div class="comment" data-comment-id="<?= $comment['id'] ?>">
+                            <img src="<?= htmlspecialchars($comment['profile_pic'] ?: 'upload/default.jpg') ?>" class="comment-avatar" alt="Avatar">
+                            <div class="comment-content">
+                                <strong><?= htmlspecialchars($comment['username']) ?>:</strong>
+                                <span><?= htmlspecialchars($comment['content']) ?></span>
+                                <div class="comment-date"><?= $comment['created_at'] ?></div>
+                            </div>
+                            <?php if ($comment['user_id'] == $_SESSION["user_id"]): ?>
+                                <button class="delete-comment-btn" data-comment-id="<?= $comment['id'] ?>">Delete</button>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <!-- add comments form -->
+                <form class="comment-form" data-post-id="<?= $post['id'] ?>">
+                    <input type="text" name="content" placeholder="Add a comment..." required>
+                    <button type="submit">Comment</button>
+                </form>
             </div>
         <?php endforeach; ?>
     </div>
@@ -88,10 +129,39 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 <script src="js/likes.js"></script>
+<script src="js/comment.js"></script>
+<script src="js/notification.js"></script>
+<script src="js/delete.js"></script>
+<!-- posts page script for notification mute button  -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        if (localStorage.getItem("notificationsEnabled") === null) {
+            localStorage.setItem("notificationsEnabled", "true");
+        }
+        let toggleBtn = document.getElementById("toggleNotifications");
+        function updateToggleText() {
+            let enabled = localStorage.getItem("notificationsEnabled");
+            toggleBtn.textContent = (enabled === "true") ? "Mute notifications" : "Unmute notifications";
+        }
+        updateToggleText();
+
+        toggleBtn.addEventListener("click", function() {
+            let enabled = localStorage.getItem("notificationsEnabled");
+            if (enabled === "true") {
+                localStorage.setItem("notificationsEnabled", "false");
+            } else {
+                localStorage.setItem("notificationsEnabled", "true");
+            }
+            updateToggleText();
+        });
+    });
+</script>
 
 </body>
 </html>
 
+<!-- misc -->
 <?php if ($success_message): ?>
     <div class="alert success"><?= htmlspecialchars($success_message) ?></div>
 <?php endif; ?>

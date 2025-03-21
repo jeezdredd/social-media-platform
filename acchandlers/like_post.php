@@ -16,35 +16,35 @@ if (!$post_id) {
     exit;
 }
 
-// Проверяем, ставил ли пользователь уже лайк
+// Check if user have liked the post
 $query = "SELECT * FROM likes WHERE user_id = ? AND post_id = ?";
 $stmt = $pdo->prepare($query);
 $stmt->execute([$user_id, $post_id]);
 $like = $stmt->fetch();
 
 if ($like) {
-    // Если лайк уже есть, удаляем его
+    // If like delete
     $query = "DELETE FROM likes WHERE user_id = ? AND post_id = ?";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$user_id, $post_id]);
 
-    // Уменьшаем счетчик лайков в таблице posts
+    // Decrease counter
     $query = "UPDATE posts SET likes_count = likes_count - 1 WHERE id = ?";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$post_id]);
 
     echo json_encode(["status" => "unliked"]);
 } else {
-    // Добавляем лайк
+    //Add like
     $query = "INSERT INTO likes (user_id, post_id) VALUES (?, ?)";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$user_id, $post_id]);
 
-    // Увеличиваем счетчик лайков в таблице posts
+    // Increase like count
     $query = "UPDATE posts SET likes_count = likes_count + 1 WHERE id = ?";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$post_id]);
 
     echo json_encode(["status" => "liked"]);
 }
-?>
+

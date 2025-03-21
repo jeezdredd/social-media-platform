@@ -1,0 +1,16 @@
+.undo-container {
+    margin-top: 5px;
+}
+
+.undo-btn {
+    background: #ffcc00;
+    color: #333;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.undo-btn:hover {
+    background: #e6b800;
+}
