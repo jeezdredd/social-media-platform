@@ -4,7 +4,7 @@ session_start();
 require_once "db/database.php";
 
 if (!isset($_SESSION["user_id"])) {
-    header("Location: login.html");
+    header("Location: login.php");
     exit;
 }
 
@@ -33,7 +33,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Лента постов</title>
+    <title>Feed page</title>
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/comments.css">
     <link rel="stylesheet" href="img/icon.jpg">
@@ -54,7 +54,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
     <div class="nav-right">
         <a href="dashboard.php" class="btn">Profile</a>
-        <a href="#" class="btn">Messages</a>
+        <a href="chat.php" class="btn">Messages</a>
         <a href="#" class="btn">Settings</a>
         <button id="toggleNotifications" class="btn">Mute notifications</button>
         <a href="acchandlers/logout.php" class="btn btn-danger">Logout</a>
@@ -64,7 +64,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <!-- publish post form -->
 <div class="feed-container">
     <div class="post-form">
-        <img src="<?= htmlspecialchars($user['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar" alt="Аватар">
+        <img src="<?= htmlspecialchars($user['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar" alt="avatar">
         <form action="acchandlers/post.php" method="POST" enctype="multipart/form-data" class="post-input">
             <textarea name="content" placeholder="Whats on your mind?" required></textarea>
             <div class="post-actions">
@@ -132,6 +132,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script src="js/comment.js"></script>
 <script src="js/notification.js"></script>
 <script src="js/delete.js"></script>
+<script src="static/js/websocket.js"></script>
 <!-- posts page script for notification mute button  -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {

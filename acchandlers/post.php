@@ -8,7 +8,7 @@ require_once '../db/database.php';
 
 // Проверяем, авторизован ли пользователь
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.html");
+    header("Location: ../login.php");
     exit();
 }
 

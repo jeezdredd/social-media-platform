@@ -18,6 +18,6 @@ async function register() {
     document.getElementById("error-message").innerText = result.message;
 
     if (result.success) {
-        window.location.href = "login.html";
+        window.location.href = "login.php";
     }
 }

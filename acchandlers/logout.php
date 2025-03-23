@@ -1,7 +1,13 @@
 <?php
+global $pdo;
 session_start();
-session_unset();
-session_destroy();
-session_regenerate_id(true);
-header("Location: ../login.html");
+require_once '../db/database.php';
+
+if (isset($_SESSION['user_id'])) {
+    $stmt = $pdo->prepare("UPDATE users SET status = 'offline', last_seen = NOW() WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+
+    session_destroy();
+}
+header("Location: ../login.php");
 exit;

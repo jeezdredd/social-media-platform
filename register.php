@@ -14,7 +14,7 @@
     <input type="password" id="password" placeholder="Password">
     <button onclick="register()">Register</button>
     <p id="error-message"></p>
-    <a href="login.html">Already a member? Sign in</a>
+    <a href="login.php">Already a member? Sign in</a>
 </div>
 
 <script src="js/register.js"></script>

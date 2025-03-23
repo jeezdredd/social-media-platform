@@ -1,0 +1,177 @@
+/* Общий стиль страницы */
+body {
+    font-family: 'Arial', sans-serif;
+    background: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Контейнер чата */
+.chat-container {
+    width: 400px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Список пользователей */
+.user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+}
+
+.last-seen {
+    font-size: 12px;
+    color: black;
+    margin-left: 10px;
+}
+
+.user-list {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.1s;
+}
+
+.user-item:hover {
+    background: #0056b3;
+    transform: scale(1.05);
+}
+
+/* Индикатор статуса (онлайн/оффлайн) */
+.status {
+    font-size: 12px;
+    margin-right: 8px;
+}
+
+.online {
+    color: green;
+}
+
+.offline {
+    color: gray;
+}
+
+/* Окно чата */
+.chat-box {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    border-radius: 8px;
+}
+
+/* Сообщения */
+.message {
+    max-width: 75%;
+    padding: 10px;
+    border-radius: 12px;
+    word-wrap: break-word;
+    font-size: 14px;
+    margin: 5px;
+    animation: fadeIn 0.3s ease-in-out;
+    position: relative;
+}
+
+/* Сообщения от текущего пользователя */
+.sent {
+    background: #d1e7ff;
+    align-self: flex-end;
+    text-align: right;
+    border-radius: 15px 15px 0 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Сообщения от собеседника */
+.received {
+    background: #e2e2e2;
+    align-self: flex-start;
+    text-align: left;
+    border-radius: 15px 15px 15px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Время сообщения */
+.message small {
+    display: block;
+    font-size: 10px;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Поле ввода */
+.input-area {
+    display: flex;
+    margin-top: 10px;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    font-size: 14px;
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+input[type="text"]:focus {
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Кнопка отправки */
+button {
+    padding: 12px 18px;
+    border: none;
+    background: #007bff;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 5px;
+    transition: background 0.3s, transform 0.1s;
+}
+
+button:hover {
+    background: #0056b3;
+    transform: scale(1.05);
+}
+
+/* Анимация появления сообщений */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

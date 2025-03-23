@@ -44,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
         $stmt->execute([$username, $email, $hashedPassword]);
 
-        echo json_encode(["success" => true, "message" => "Регистрация успешна!", "redirect" => "login.html"]);
+        echo json_encode(["success" => true, "message" => "Регистрация успешна!", "redirect" => "login.php"]);
     } catch (PDOException $e) {
         echo json_encode(["success" => false, "message" => "Ошибка регистрации: " . $e->getMessage()]);
     }

@@ -13,9 +13,10 @@
     <input type="password" id="password" placeholder="Password">
     <button onclick="login()">Login</button>
     <p id="error-message"></p>
-    <a href="register.html">Not a member? Sign up</a>
+    <a href="register.php">Not a member? Sign up</a>
 </div>
 
 <script src="js/login.js"></script>
 </body>
 </html>
+
