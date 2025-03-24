@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("profilePicForm").addEventListener("submit", async function(event) {
         event.preventDefault();
         let formData = new FormData(this);
-        let response = await fetch("acchandlers/upload_profile.php", { method: "POST", body: formData });
+        let response = await fetch("profile/upload_profile.php", { method: "POST", body: formData });
         let result = await response.json();
         document.getElementById("uploadMessage").innerText = result.message;
         if (result.success) location.reload();
@@ -55,11 +55,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     confirmLogout.onclick = function () {
-        window.location.href = "acchandlers/logout.php";
+        window.location.href = "/dmuk-coursework/auth/logout.php";
     }
 
     window.onclick = function (event) {
-        if (event.target == logoutModal) {
+        if (event.target === logoutModal) {
             logoutModal.style.display = "none";
         }
     }

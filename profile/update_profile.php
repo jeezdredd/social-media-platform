@@ -13,26 +13,24 @@ $username = trim($_POST["username"] ?? "");
 $password = trim($_POST["password"] ?? "");
 
 if (empty($username)) {
-    $_SESSION["update_error"] = "Имя пользователя не может быть пустым.";
+    $_SESSION["update_error"] = "Name cannot be empty.";
     header("Location: ../dashboard.php");
     exit;
 }
 
 try {
-    // Обновляем имя пользователя
     $stmt = $pdo->prepare("UPDATE users SET username = ? WHERE id = ?");
     $stmt->execute([$username, $user_id]);
 
-    // Обновляем пароль, если он введен
     if (!empty($password)) {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
         $stmt->execute([$hashedPassword, $user_id]);
     }
 
-    $_SESSION["update_success"] = "Данные обновлены!";
+    $_SESSION["update_success"] = "Username or password updated!";
 } catch (PDOException $e) {
-    $_SESSION["update_error"] = "Ошибка: " . $e->getMessage();
+    $_SESSION["update_error"] = "Error: " . $e->getMessage();
 }
 
 header("Location: ../dashboard.php");

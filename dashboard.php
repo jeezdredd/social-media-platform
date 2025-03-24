@@ -64,7 +64,7 @@ $profilePic = $user['profile_pic'] ?: 'upload/default.jpg';
         <div class="modal-content">
             <span class="close">&times;</span>
             <h3>Edit profile</h3>
-            <form action="acchandlers/update_profile.php" method="POST">
+            <form action="profile/update_profile.php" method="POST">
                 <label for="username">New username:</label>
                 <input type="text" id="username" name="username" value="<?= htmlspecialchars($user["username"]) ?>" required>
 
