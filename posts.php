@@ -54,54 +54,44 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <audio id="notifySound" src="sounds/notify.mp3" preload="auto"></audio>
 
-<!-- upper nav bar -->
-<div class="navbar">
-    <div class="nav-left">
-        <h2>Feed</h2>
+    <!-- upper nav bar -->
+    <div class="navbar">
+        <div class="nav-left">
+            <h2>Feed</h2>
+        </div>
+        <div class="nav-right">
+            <a href="dashboard.php" class="btn">Profile</a>
+            <a href="chat.php" class="btn">Messages</a>
+            <a href="#" class="btn">Settings</a>
+            <button id="toggleNotifications" class="btn">Mute notifications</button>
+            <a href="auth/logout.php" class="btn btn-danger">Logout</a>
+        </div>
     </div>
-    <div class="nav-right">
-        <a href="dashboard.php" class="btn">Profile</a>
-        <a href="chat.php" class="btn">Messages</a>
-        <a href="#" class="btn">Settings</a>
-        <button id="toggleNotifications" class="btn">Mute notifications</button>
-        <a href="auth/logout.php" class="btn btn-danger">Logout</a>
-    </div>
-</div>
 
-<div class="burger">
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M5 12H20" stroke="#000000" stroke-width="2" stroke-linecap="round"/>
-        <path d="M5 17H20" stroke="#000000" stroke-width="2" stroke-linecap="round"/>
-        <path d="M5 7H20" stroke="#000000" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-</div>
-
-<div class="navbar--mobile">
-    <div class="navbar__close">
-        <svg width="32px" height="32px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--emojione" preserveAspectRatio="xMidYMid meet">
-            <path fill="#ff5a79" d="M62 10.6L53.4 2L32 23.4L10.6 2L2 10.6L23.4 32L2 53.4l8.6 8.6L32 40.6L53.4 62l8.6-8.6L40.6 32z"></path>
+    <div class="burger">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H20" stroke="#000000" stroke-width="2" stroke-linecap="round"/>
+            <path d="M5 17H20" stroke="#000000" stroke-width="2" stroke-linecap="round"/>
+            <path d="M5 7H20" stroke="#000000" stroke-width="2" stroke-linecap="round"/>
         </svg>
     </div>
-    <div class="navbar__list">
-        <a href="dashboard.php" class="btn">Profile</a>
-        <a href="chat.php" class="btn">Messages</a>
-        <a href="#" class="btn">Settings</a>
-        <button id="toggleNotifications" class="btn">Mute notifications</button>
-        <a href="acchandlers/logout.php" class="btn btn-danger">Logout</a>
-    </div>
-</div>
 
-<!-- publish post form -->
-<div class="feed-container">
-    <div class="post-form">
-        <img src="<?= htmlspecialchars($user['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar" alt="avatar">
-        <form action="acchandlers/post.php" method="POST" enctype="multipart/form-data" class="post-input">
-            <textarea name="content" placeholder="Whats on your mind?" required></textarea>
-            <div class="post-actions">
-                <input type="file" name="image">
-                <button type="submit">Publish</button>
-            </div>
-        </form>
+    <div class="navbar--mobile">
+        <div class="navbar__close">
+            <svg width="32px" height="32px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"
+                 aria-hidden="true" role="img"
+                 class="iconify iconify--emojione" preserveAspectRatio="xMidYMid meet">
+                <path fill="#ff5a79"
+                      d="M62 10.6L53.4 2L32 23.4L10.6 2L2 10.6L23.4 32L2 53.4l8.6 8.6L32 40.6L53.4 62l8.6-8.6L40.6 32z"></path>
+            </svg>
+        </div>
+        <div class="navbar__list">
+            <a href="dashboard.php" class="btn">Profile</a>
+            <a href="chat.php" class="btn">Messages</a>
+            <a href="#" class="btn">Settings</a>
+            <button id="toggleNotifications" class="btn">Mute notifications</button>
+            <a href="acchandlers/logout.php" class="btn btn-danger">Logout</a>
+        </div>
     </div>
 
     <!-- publish post form -->
@@ -118,94 +108,110 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </form>
         </div>
 
-        <div id="posts">
-            <?php foreach ($posts as $post): ?>
-                <div class="post" data-post-id="<?= $post['id'] ?>">
-                    <div class="post-header">
-                        <img src="<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar"
-                             alt="Profile picture">
-                        <p><?= htmlspecialchars($post['username']) ?></p>
-                        <?php if ($post['user_id'] == $_SESSION["user_id"]): ?>
-                            <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
+        <!-- publish post form -->
+        <div class="feed-container">
+            <div class="post-form">
+                <img src="<?= htmlspecialchars($user['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar"
+                     alt="avatar">
+                <form action="acchandlers/post.php" method="POST" enctype="multipart/form-data" class="post-input">
+                    <textarea name="content" placeholder="Whats on your mind?" required></textarea>
+                    <div class="post-actions">
+                        <input type="file" name="image">
+                        <button type="submit">Publish</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="posts">
+                <?php foreach ($posts as $post): ?>
+                    <div class="post" data-post-id="<?= $post['id'] ?>">
+                        <div class="post-header">
+                            <img src="<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>"
+                                 class="avatar"
+                                 alt="Profile picture">
+                            <p><?= htmlspecialchars($post['username']) ?></p>
+                            <?php if ($post['user_id'] == $_SESSION["user_id"]): ?>
+                                <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
+                            <?php endif; ?>
+                        </div>
+                        <p><?= htmlspecialchars($post['content']) ?></p>
+                        <?php if (!empty($post['image'])): ?>
+                            <img src="<?= htmlspecialchars($post['image']) ?>" class="post-image" alt="Post picture">
                         <?php endif; ?>
-                    </div>
-                    <p><?= htmlspecialchars($post['content']) ?></p>
-                    <?php if (!empty($post['image'])): ?>
-                        <img src="<?= htmlspecialchars($post['image']) ?>" class="post-image" alt="Post picture">
-                    <?php endif; ?>
-                    <div class="post-date"><?= $post['created_at'] ?></div>
+                        <div class="post-date"><?= $post['created_at'] ?></div>
 
-                    <!-- likes button -->
-                    <button class="like-btn" data-post-id="<?= $post['id'] ?>">
-                        ❤️ <span class="like-count"><?= $post['likes_count'] ?></span>
-                    </button>
+                        <!-- likes button -->
+                        <button class="like-btn" data-post-id="<?= $post['id'] ?>">
+                            ❤️ <span class="like-count"><?= $post['likes_count'] ?></span>
+                        </button>
 
-                    <!-- dislike button -->
-                    <button class="dislike-btn" data-post-id="<?= $post['id'] ?>">
-                        👎 <span class="dislike-count"><?= $post['dislikes_count'] ?></span>
-                    </button>
+                        <!-- dislike button -->
+                        <button class="dislike-btn" data-post-id="<?= $post['id'] ?>">
+                            👎 <span class="dislike-count"><?= $post['dislikes_count'] ?></span>
+                        </button>
 
-                    <!-- comments section -->
-                    <div class="comments" id="comments-<?= $post['id'] ?>">
-                        <?php
-                        $stmtComments = $pdo->prepare("SELECT c.*, u.username, u.profile_pic FROM comments c JOIN users u ON c.user_id = u.id WHERE c.post_id = ? ORDER BY c.created_at ASC");
-                        $stmtComments->execute([$post['id']]);
-                        $comments = $stmtComments->fetchAll(PDO::FETCH_ASSOC);
-                        foreach ($comments as $comment):
-                            ?>
-                            <div class="comment" data-comment-id="<?= $comment['id'] ?>">
-                                <img src="<?= htmlspecialchars($comment['profile_pic'] ?: 'upload/default.jpg') ?>"
-                                     class="comment-avatar" alt="Avatar">
-                                <div class="comment-content">
-                                    <strong><?= htmlspecialchars($comment['username']) ?>:</strong>
-                                    <span><?= htmlspecialchars($comment['content']) ?></span>
-                                    <div class="comment-date"><?= $comment['created_at'] ?></div>
+                        <!-- comments section -->
+                        <div class="comments" id="comments-<?= $post['id'] ?>">
+                            <?php
+                            $stmtComments = $pdo->prepare("SELECT c.*, u.username, u.profile_pic FROM comments c JOIN users u ON c.user_id = u.id WHERE c.post_id = ? ORDER BY c.created_at ASC");
+                            $stmtComments->execute([$post['id']]);
+                            $comments = $stmtComments->fetchAll(PDO::FETCH_ASSOC);
+                            foreach ($comments as $comment):
+                                ?>
+                                <div class="comment" data-comment-id="<?= $comment['id'] ?>">
+                                    <img src="<?= htmlspecialchars($comment['profile_pic'] ?: 'upload/default.jpg') ?>"
+                                         class="comment-avatar" alt="Avatar">
+                                    <div class="comment-content">
+                                        <strong><?= htmlspecialchars($comment['username']) ?>:</strong>
+                                        <span><?= htmlspecialchars($comment['content']) ?></span>
+                                        <div class="comment-date"><?= $comment['created_at'] ?></div>
+                                    </div>
+                                    <?php if ($comment['user_id'] == $_SESSION["user_id"]): ?>
+                                        <button class="delete-comment-btn" data-comment-id="<?= $comment['id'] ?>">
+                                            Delete
+                                        </button>
+                                    <?php endif; ?>
                                 </div>
-                                <?php if ($comment['user_id'] == $_SESSION["user_id"]): ?>
-                                    <button class="delete-comment-btn" data-comment-id="<?= $comment['id'] ?>">Delete
-                                    </button>
-                                <?php endif; ?>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
+                            <?php endforeach; ?>
+                        </div>
 
-                    <!-- add comments form -->
-                    <form class="comment-form" data-post-id="<?= $post['id'] ?>">
-                        <input type="text" name="content" placeholder="Add a comment..." required>
-                        <button type="submit">Comment</button>
-                    </form>
-                </div>
-            <?php endforeach; ?>
+                        <!-- add comments form -->
+                        <form class="comment-form" data-post-id="<?= $post['id'] ?>">
+                            <input type="text" name="content" placeholder="Add a comment..." required>
+                            <button type="submit">Comment</button>
+                        </form>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
         </div>
 
-    </div>
-
-    <?php 
+        <?php
         if ($totalPosts >= $limit) {
             echo '<button class="more" data-limit="' . $limit . '">Load more</button>';
         }
-    ?>
+        ?>
 
-</div>
+    </div>
 
-<script src="js/likes.js"></script>
-<script src="js/comment.js"></script>
-<script src="js/notification.js"></script>
-<script src="js/delete.js"></script>
-<script src="js/mobile_menu.js"></script>
-<script src="static/js/websocket.js"></script>
+    <script src="js/likes.js"></script>
+    <script src="js/dislikes.js"></script>
+    <script src="js/comment.js"></script>
+    <script src="js/notification.js"></script>
+    <script src="js/delete.js"></script>
+    <script src="js/mobile_menu.js"></script>
 
-<script>
-    const moreBtn = document.querySelector(".more");
-    const currentLimit = moreBtn.dataset.limit;
-    moreBtn.addEventListener("click", () => {
-        window.location.href = `posts.php?offset=${parseInt(currentLimit) + 7}`;
-    })
-</script>
+    <script>
+        const moreBtn = document.querySelector(".more");
+        const currentLimit = moreBtn.dataset.limit;
+        moreBtn.addEventListener("click", () => {
+            window.location.href = `posts.php?offset=${parseInt(currentLimit) + 7}`;
+        })
+    </script>
 
-<!-- posts page script for notification mute button  -->
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
+    <!-- posts page script for notification mute button  -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
 
             if (localStorage.getItem("notificationsEnabled") === null) {
                 localStorage.setItem("notificationsEnabled", "true");
