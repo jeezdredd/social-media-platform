@@ -353,3 +353,13 @@ button:hover {
     color: red;
     text-align: center;
 }
+
+.like-btn.active {
+    color: red;
+    font-weight: bold;
+}
+
+.dislike-btn.active {
+    color: blue;
+    font-weight: bold;
+}
