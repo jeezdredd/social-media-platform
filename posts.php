@@ -64,7 +64,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <a href="chat.php" class="btn">Messages</a>
         <a href="#" class="btn">Settings</a>
         <button id="toggleNotifications" class="btn">Mute notifications</button>
-        <a href="acchandlers/logout.php" class="btn btn-danger">Logout</a>
+        <a href="auth/logout.php" class="btn btn-danger">Logout</a>
     </div>
 </div>
 

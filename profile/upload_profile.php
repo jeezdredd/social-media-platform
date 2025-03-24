@@ -4,7 +4,7 @@ session_start();
 require_once '../db/database.php';
 
 if (!isset($_SESSION['user_id'])) {
-    echo json_encode(["success" => false, "message" => "Необходимо войти в систему."]);
+    echo json_encode(["success" => false, "message" => "You are not authorised."]);
     exit();
 }
 
@@ -25,11 +25,11 @@ if (isset($_FILES['profilePic']) && $_FILES['profilePic']['error'] === UPLOAD_ER
         $stmt = $pdo->prepare("UPDATE users SET profile_pic = ? WHERE id = ?");
         $stmt->execute([$imagePath, $user_id]);
 
-        echo json_encode(["success" => true, "message" => "Фото профиля обновлено!"]);
+        echo json_encode(["success" => true, "message" => "Profile photo updated!"]);
     } else {
-        echo json_encode(["success" => false, "message" => "Ошибка загрузки фото."]);
+        echo json_encode(["success" => false, "message" => "Error uploading photos."]);
     }
 } else {
-    echo json_encode(["success" => false, "message" => "Выберите файл."]);
+    echo json_encode(["success" => false, "message" => "You have to select file."]);
 }
-?>
+

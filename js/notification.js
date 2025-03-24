@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
             lastCommentId: lastCommentId
         });
 
-        fetch("acchandlers/check_notifications.php?" + params.toString())
+        fetch("notification/check_notifications.php?" + params.toString())
             .then(response => response.json())
             .then(data => {
                 if (data.new_posts > 0) {
