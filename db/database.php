@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';
-$dbname = 'webapp';
+$dbname = 'coursework';
 $username = 'root';
 $password = '';
 
