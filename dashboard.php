@@ -65,13 +65,17 @@ $profilePic = $user['profile_pic'] ?: 'upload/default.jpg';
             <span class="close">&times;</span>
             <h3>Edit profile</h3>
             <form action="profile/update_profile.php" method="POST">
-                <label for="username">New username:</label>
-                <input type="text" id="username" name="username" value="<?= htmlspecialchars($user["username"]) ?>" required>
+                <div class="edit__field">
+                    <label for="username">New username:</label>
+                    <input type="text" id="username" name="username" value="<?= htmlspecialchars($user["username"]) ?>" required>
+                </div>
 
-                <label for="password">New password:</label>
-                <input type="password" id="password" name="password">
+                <div class="edit__field">
+                    <label for="password">New password:</label>
+                    <input type="password" id="password" name="password">
+                </div>
 
-                <button type="submit">Save changes</button>
+                <button class="dashboard__button" type="submit">Save changes</button>
             </form>
         </div>
     </div>
@@ -81,8 +85,8 @@ $profilePic = $user['profile_pic'] ?: 'upload/default.jpg';
             <span class="close">&times;</span>
             <h3>Upload new profile photo</h3>
             <form id="profilePicForm" enctype="multipart/form-data">
-                <input type="file" id="profilePic" name="profilePic" required>
-                <button type="submit">Upload</button>
+                <input style="margin-bottom: 10px;" type="file" id="profilePic" name="profilePic" required>
+                <button class="dashboard__button" type="submit">Upload</button>
             </form>
             <p id="uploadMessage"></p>
         </div>

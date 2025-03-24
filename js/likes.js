@@ -8,8 +8,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             fetch("acchandlers/like_post.php", {
                 method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: "post_id=" + postId
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                body: "post_id=" + postId,
             })
                 .then(response => response.json())
                 .then(data => {
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         button.classList.remove("active");
                     }
                 })
-                .catch(error => console.error("Error:", error));
+                .catch(error => console.error("Error:", error?.message));
         });
     });
 });

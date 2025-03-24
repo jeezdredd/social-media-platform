@@ -128,6 +128,26 @@
     color: red;
 }
 
+.dashboard__button {
+    width: 100%;
+    padding: 6px;
+    border-radius: 10px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+
+.edit__field {
+    margin-bottom: 10px;
+}
+
+.edit__field > input {
+    padding: 4px;
+    border-radius: 4px;
+}
+
 .success-message {
     color: green;
     text-align: center;
