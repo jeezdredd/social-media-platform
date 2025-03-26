@@ -22,6 +22,11 @@ $totalSql = "SELECT COUNT(*) FROM posts";
 $stmt = $pdo->query($totalSql);
 $totalPosts = $stmt->fetchColumn();
 
+$user_id = $_SESSION['user_id'];
+$stmt = $pdo->prepare("SELECT post_id FROM favorites WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$favorites = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
 $sql = "SELECT posts.*, users.username, users.profile_pic 
         FROM posts 
         INNER JOIN users ON posts.user_id = users.id 
@@ -62,7 +67,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="nav-right">
             <a href="dashboard.php" class="btn">Profile</a>
             <a href="chat.php" class="btn">Messages</a>
-            <a href="#" class="btn">Settings</a>
+            <a href="favorites.php" class="btn">Favorites</a>
             <button id="toggleNotifications" class="btn">Mute notifications</button>
             <a href="auth/logout.php" class="btn btn-danger">Logout</a>
         </div>
@@ -96,21 +101,17 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- publish post form -->
     <div class="feed-container">
-        <!-- publish post form -->
-            <div class="post-form">
-                <img src="<?= htmlspecialchars($user['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar"
-                     alt="avatar">
-                <form action="acchandlers/post.php" method="POST" enctype="multipart/form-data" class="post-input">
-                    <div class="post-input__area">
-                        <textarea name="content" placeholder="Whats on your mind?" required></textarea>
-                        <div class="post-input__counter">0</div>
-                    </div>
-                    <div class="post-actions">
-                        <input type="file" name="image">
-                        <button type="submit">Publish</button>
-                    </div>
-                </form>
-            </div>
+        <div class="post-form">
+            <img src="<?= htmlspecialchars($user['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar"
+                 alt="avatar">
+            <form action="acchandlers/post.php" method="POST" enctype="multipart/form-data" class="post-input">
+                <textarea name="content" placeholder="Whats on your mind?" required></textarea>
+                <div class="post-actions">
+                    <input type="file" name="image">
+                    <button type="submit">Publish</button>
+                </div>
+            </form>
+        </div>
 
             <div id="posts">
                 <?php foreach ($posts as $post): ?>
@@ -138,6 +139,11 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <!-- dislike button -->
                         <button class="dislike-btn" data-post-id="<?= $post['id'] ?>">
                             👎 <span class="dislike-count"><?= $post['dislikes_count'] ?></span>
+                        </button>
+
+                        <!-- favorites button -->
+                        <button class="favorite-btn" data-id="<?= $post['id']; ?>">
+                            <?= in_array($post['id'], $favorites) ? '✅ В избранном' : '⭐ Добавить в избранное'; ?>
                         </button>
 
                         <!-- comments section -->
@@ -174,6 +180,8 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <?php endforeach; ?>
             </div>
 
+        </div>
+
         <?php
         if ($totalPosts >= $limit) {
             echo '<button class="more" data-limit="' . $limit . '">Load more</button>';
@@ -184,6 +192,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <script src="js/likes.js"></script>
     <script src="js/dislikes.js"></script>
+    <script src="js/favorites.js"></script>
     <script src="js/comment.js"></script>
     <script src="js/notification.js"></script>
     <script src="js/delete.js"></script>

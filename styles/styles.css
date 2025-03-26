@@ -25,8 +25,10 @@ body {
     align-items: center;
     background: white;
     padding: 15px;
+    margin-top: 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
+    border-radius: 10px;
 }
 
 .navbar--mobile {
@@ -375,6 +377,7 @@ button.more {
     max-width: 100%;
     border-radius: 10px;
     margin-top: 10px;
+    object-fit: cover;
 }
 
 .like-btn {
@@ -436,6 +439,19 @@ button:hover {
 .error-message {
     color: red;
     text-align: center;
+}
+
+.favorite-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #ff9800;
+    transition: 0.3s;
+}
+
+.favorite-btn:hover {
+    color: #ff5722;
 }
 
 @media (max-width: 768px) {

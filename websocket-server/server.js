@@ -17,12 +17,12 @@ db.connect(err => {
         console.error("Error connecting to database:", err);
         process.exit(1);
     }
-    console.log("✅ Successfully connected to the database!");
+    console.log("DB_LOG: ✅ Successfully connected to the database!");
 });
 
 
 const wss = new WebSocket.Server({ port: PORT }, () => {
-    console.log(`🚀 WebSocket launched. Port: ${PORT}`);
+    console.log(`SERVER_LOG: 🚀 WebSocket launched. Port: ${PORT}`);
 });
 
 let clients = {};
@@ -41,7 +41,7 @@ wss.on("connection", (ws, req) => {
         if (data.type === "connect") {
             userId = data.userId;
             clients[userId] = ws;
-            console.log(`🔵 User ${userId} connected`);
+            console.log(`CONN_LOG: 🔵 User ${userId} connected`);
         }
 
         if (data.type === "message") {
@@ -55,7 +55,7 @@ wss.on("connection", (ws, req) => {
                         console.error("Error saving message to database:", err);
                         return;
                     }
-                    console.log("💾 Message saved!");
+                    console.log("MSG_LOG: 💾 Message saved!");
                 });
 
             //Sending message to user if online
@@ -72,7 +72,7 @@ wss.on("connection", (ws, req) => {
 
     ws.on("close", () => {
         if (userId) {
-            console.log(`🔴 User ${userId} disconnected`);
+            console.log(`CONN_LOG: 🔴 User ${userId} disconnected`);
             delete clients[userId];
         }
     });
