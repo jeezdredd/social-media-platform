@@ -95,7 +95,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <a href="chat.php" class="btn">Messages</a>
             <a href="#" class="btn">Settings</a>
             <button id="toggleNotifications" class="btn">Mute notifications</button>
-            <a href="acchandlers/logout.php" class="btn btn-danger">Logout</a>
+            <a href="auth/logout.php" class="btn btn-danger">Logout</a>
         </div>
     </div>
 
@@ -143,7 +143,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                         <!-- favorites button -->
                         <button class="favorite-btn" data-id="<?= $post['id']; ?>">
-                            <?= in_array($post['id'], $favorites) ? '✅ В избранном' : '⭐ Добавить в избранное'; ?>
+                            <?= in_array($post['id'], $favorites) ? '✅ In favorites' : '⭐ Add to favorites'; ?>
                         </button>
 
                         <!-- comments section -->
