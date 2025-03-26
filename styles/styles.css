@@ -286,9 +286,21 @@ button.more {
     gap: 10px;
 }
 
+.post-input__area {
+    position: relative;
+    width: 75%;
+}
+
+.post-input__counter {
+    position: absolute;
+    right: 10px;
+    bottom: -12px;
+    font-size: 12px;
+    color: #657786;
+}
 
 .post-input textarea {
-    width: 75%;
+    width: 100%;
     border: none;
     outline: none;
     font-size: 16px;
@@ -432,7 +444,7 @@ button:hover {
         min-width: unset;
     }
 
-    .post-input textarea {
+    .post-input__area {
         width: 100%;
     }
 
@@ -466,6 +478,11 @@ button:hover {
 
 .close {
     animation: closeMenu 300ms ease-in-out forwards;
+}
+
+.disabled {
+    background-color: #6eb2fb !important;
+    cursor: not-allowed !important;
 }
 
 @keyframes openMenu {

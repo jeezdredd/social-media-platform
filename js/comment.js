@@ -83,3 +83,26 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
+const textArea = document.querySelector(".post-input__area>textarea");
+const charCounter = document.querySelector(".post-input__area>.post-input__counter");
+const publishBtn = document.querySelector(".post-actions>button");
+
+if (textArea.value.length === 0) {
+    publishBtn.disabled = true;
+    publishBtn.classList.add("disabled");
+}
+
+textArea.addEventListener("input", function (e) {
+    const currentLength = e.currentTarget.value.length;
+    charCounter.textContent = currentLength + "/255";
+
+    if (currentLength > 0 && currentLength <= 255) {
+        publishBtn.disabled = false;
+        publishBtn.classList.remove("disabled");
+    } else {
+        publishBtn.disabled = true;
+        publishBtn.classList.add("disabled");
+    }
+
+});

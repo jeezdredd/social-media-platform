@@ -8,7 +8,7 @@ async function register() {
         return;
     }
 
-    const response = await fetch('/dmuk-coursework/acchandlers/register.php', {
+    const response = await fetch('/dmuk-coursework/auth/register.php', {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: `username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`

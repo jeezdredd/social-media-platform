@@ -96,25 +96,15 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- publish post form -->
     <div class="feed-container">
-        <div class="post-form">
-            <img src="<?= htmlspecialchars($user['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar"
-                 alt="avatar">
-            <form action="acchandlers/post.php" method="POST" enctype="multipart/form-data" class="post-input">
-                <textarea name="content" placeholder="Whats on your mind?" required></textarea>
-                <div class="post-actions">
-                    <input type="file" name="image">
-                    <button type="submit">Publish</button>
-                </div>
-            </form>
-        </div>
-
         <!-- publish post form -->
-        <div class="feed-container">
             <div class="post-form">
                 <img src="<?= htmlspecialchars($user['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar"
                      alt="avatar">
                 <form action="acchandlers/post.php" method="POST" enctype="multipart/form-data" class="post-input">
-                    <textarea name="content" placeholder="Whats on your mind?" required></textarea>
+                    <div class="post-input__area">
+                        <textarea name="content" placeholder="Whats on your mind?" required></textarea>
+                        <div class="post-input__counter">0</div>
+                    </div>
                     <div class="post-actions">
                         <input type="file" name="image">
                         <button type="submit">Publish</button>
@@ -183,8 +173,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 <?php endforeach; ?>
             </div>
-
-        </div>
 
         <?php
         if ($totalPosts >= $limit) {
