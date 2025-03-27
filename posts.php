@@ -49,6 +49,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <link rel="stylesheet" href="styles/comments.css">
         <link rel="stylesheet" href="img/icon.jpg">
         <link rel="stylesheet" href="styles/undo.css">
+        <link rel="stylesheet" href="styles/loader.css">
     </head>
     <body>
     <script>
@@ -57,6 +58,14 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </script>
 
     <audio id="notifySound" src="sounds/notify.mp3" preload="auto"></audio>
+
+    <div class="loader-container" id="loader">
+        <div class="loader">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
 
     <!-- upper nav bar -->
     <div class="navbar">
@@ -187,8 +196,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         ?>
 
-    </div>
-
     <script src="js/likes.js"></script>
     <script src="js/dislikes.js"></script>
     <script src="js/favorites.js"></script>
@@ -196,6 +203,12 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="js/notification.js"></script>
     <script src="js/delete.js"></script>
     <script src="js/mobile_menu.js"></script>
+
+    <script>
+        setTimeout(() => {
+            document.getElementById("loader").classList.add("hidden");
+        }, 1500);
+    </script>
 
     <script>
         const moreBtn = document.querySelector(".more");

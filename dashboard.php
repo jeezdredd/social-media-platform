@@ -22,10 +22,17 @@ $profilePic = $user['profile_pic'] ?: 'upload/default.jpg';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile Page</title>
     <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="stylesheet" href="styles/loader.css">
 </head>
 <body class="profile-page">
 
-
+<div class="loader-container" id="loader">
+    <div class="loader">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+</div>
 
 <div class="container">
     <h2>Welcome, <?php echo htmlspecialchars($user["username"]); ?>!</h2>
@@ -61,7 +68,8 @@ $profilePic = $user['profile_pic'] ?: 'upload/default.jpg';
             <form action="profile/update_profile.php" method="POST">
                 <div class="edit__field">
                     <label for="username">New username:</label>
-                    <input type="text" id="username" name="username" value="<?= htmlspecialchars($user["username"]) ?>" required>
+                    <input type="text" id="username" name="username" value="<?= htmlspecialchars($user["username"]) ?>"
+                           required>
                 </div>
 
                 <div class="edit__field">
@@ -87,7 +95,6 @@ $profilePic = $user['profile_pic'] ?: 'upload/default.jpg';
     </div>
 
 
-
     <?php if (isset($_SESSION["update_success"])): ?>
         <p class="success-message"><?= $_SESSION["update_success"] ?></p>
         <?php unset($_SESSION["update_success"]); ?>
@@ -98,6 +105,11 @@ $profilePic = $user['profile_pic'] ?: 'upload/default.jpg';
 
 </div>
 
+<script>
+    setTimeout(() => {
+        document.getElementById("loader").classList.add("hidden");
+    }, 1500);
+</script>
 <script src="js/profile_page.js"></script>
 
 </body>

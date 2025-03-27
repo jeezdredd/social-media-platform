@@ -21,12 +21,23 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat</title>
     <link rel="stylesheet" href="styles/chat.css">
+    <link rel="stylesheet" href="styles/loader.css">
 </head>
 <body>
+
+<div class="loader-container" id="loader">
+    <div class="loader">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+</div>
+
 <input type="hidden" id="user-id" value="<?= $_SESSION['user_id'] ?? '' ?>">
 <div class="chat-container">
     <?php
-    function formatLastSeen($timestamp) {
+    function formatLastSeen($timestamp)
+    {
         if (!$timestamp) return "Неизвестно";
 
         $time = strtotime($timestamp);
@@ -42,10 +53,11 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return date("d.m.Y at H:i", $time);
         }
     }
+
     ?>
 
     <div class="user-list">
-        <h3>Выберите собеседника:</h3>
+        <h3>Choose message receiver:</h3>
         <?php foreach ($users as $user): ?>
             <?php
             $lastSeen = isset($user['last_seen']) ? formatLastSeen($user['last_seen']) : "Unknown";
@@ -74,5 +86,10 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <a href="posts.php">To feed page</a>
 </div>
 <script src="js/chat.js" defer></script>
+<script>
+    setTimeout(() => {
+        document.getElementById("loader").classList.add("hidden");
+    }, 1500);
+</script>
 </body>
 </html>
