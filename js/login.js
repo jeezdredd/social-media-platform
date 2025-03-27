@@ -25,6 +25,8 @@ async function login() {
         errorMessage.innerText = result.message;
 
         if (result.success) {
+            localStorage.removeItem("lastPostId");
+            localStorage.removeItem("lastCommentId");
             window.location.href = result.redirect || "dashboard.php";
         }
     } catch (error) {
