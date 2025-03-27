@@ -1,3 +1,7 @@
+<?php
+require_once "auth/auth_check.php";
+?>
+
 <style>
     /* General */
     * {

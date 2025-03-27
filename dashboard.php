@@ -1,10 +1,6 @@
 <?php
-global $pdo;
+require_once "auth/auth_check.php";
 session_start();
-if (!isset($_SESSION["user_id"])) {
-    header("Location: login.php");
-    exit;
-}
 
 require_once "db/database.php";
 

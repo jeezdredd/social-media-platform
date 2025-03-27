@@ -1,10 +1,8 @@
 <?php
+require_once "auth/auth_check.php";
 session_start();
 require_once "db/database.php";
 
-if (!isset($_SESSION['user_id'])) {
-    die("Error: You have to be authorised to view this page.");
-}
 
 $user_id = $_SESSION['user_id'];
 

@@ -1,6 +1,7 @@
 <?php
-global $pdo;
+require_once "auth_check.php";
 require_once '../db/database.php';
+
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -49,4 +50,4 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         echo json_encode(["success" => false, "message" => "Ошибка регистрации: " . $e->getMessage()]);
     }
 }
-?>
+

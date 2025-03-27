@@ -1,11 +1,8 @@
 <?php
-global $pdo;
+require_once "auth/auth_check.php";
 session_start();
 require_once __DIR__ . '/../db/database.php';
 
-if (!isset($_SESSION['user_id'])) {
-    die("Ошибка: пользователь не авторизован.");
-}
 
 $user_id = $_SESSION['user_id'];
 
@@ -23,4 +20,4 @@ $stmt->execute(['user_id' => $user_id, 'receiver_id' => $receiver_id]);
 
 header('Content-Type: application/json');
 echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
-?>
+
