@@ -1,7 +1,5 @@
 <?php
 require_once "auth/auth_check.php";
-session_start();
-
 require_once "db/database.php";
 
 $stmt = $pdo->prepare("SELECT username, profile_pic FROM users WHERE id = ?");

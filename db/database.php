@@ -1,5 +1,4 @@
 <?php
-require_once "auth/auth_check.php";
 $host = 'localhost';
 $dbname = 'webapp';
 $username = 'root';
