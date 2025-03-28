@@ -1,42 +1,60 @@
 <?php
-require_once "auth/auth_check.php";
-require_once "db/database.php";
+session_start();
+require_once "../db/database.php";
 
-// Get user data
-$stmt = $pdo->prepare("SELECT username, profile_pic FROM users WHERE id = ?");
-$stmt->execute([$_SESSION["user_id"]]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+// Get profile user ID from URL
+$profile_user_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$current_user_id = $_SESSION["user_id"];
 
-if (!$user) {
-    session_destroy();
-    header("Location: login.php");
+// If no ID provided or same as current user, redirect to own profile
+if ($profile_user_id == 0 || $profile_user_id == $current_user_id) {
+    header("Location: ../dashboard.php");
     exit;
 }
 
-$profilePic = $user['profile_pic'] ?: 'upload/default.jpg';
+// Get user data
+$stmt = $pdo->prepare("SELECT username, profile_pic FROM users WHERE id = ?");
+$stmt->execute([$profile_user_id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Get user's own posts
-$user_id = $_SESSION['user_id'];
-$stmt = $pdo->prepare("SELECT post_id FROM favorites WHERE user_id = ?");
-$stmt->execute([$user_id]);
-$favorites = $stmt->fetchAll(PDO::FETCH_COLUMN);
+// If user not found
+if (!$user) {
+    $_SESSION["error_message"] = "User not found";
+    header("Location: ../posts.php");
+    exit;
+}
 
+// Fix profile pic path
+$profilePic = $user['profile_pic'] ? "../" . $user['profile_pic'] : "../upload/default.jpg";
+
+// Check if following
+$stmt = $pdo->prepare("SELECT * FROM followers WHERE follower_id = ? AND followed_id = ?");
+$stmt->execute([$current_user_id, $profile_user_id]);
+$isFollowing = $stmt->rowCount() > 0;
+
+// Get follower and following counts
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM followers WHERE followed_id = ?");
-$stmt->execute([$_SESSION["user_id"]]);
+$stmt->execute([$profile_user_id]);
 $followersCount = $stmt->fetchColumn();
 
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM followers WHERE follower_id = ?");
-$stmt->execute([$_SESSION["user_id"]]);
+$stmt->execute([$profile_user_id]);
 $followingCount = $stmt->fetchColumn();
 
-$sql = "SELECT posts.*, users.username, users.profile_pic 
-        FROM posts 
-        INNER JOIN users ON posts.user_id = users.id 
+// Get current user's favorites for comparison
+$stmt = $pdo->prepare("SELECT post_id FROM favorites WHERE user_id = ?");
+$stmt->execute([$current_user_id]);
+$favorites = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+// Get user's posts
+$sql = "SELECT posts.*, users.username, users.profile_pic
+        FROM posts
+        INNER JOIN users ON posts.user_id = users.id
         WHERE posts.user_id = :user_id
         ORDER BY posts.created_at DESC";
 
 $stmt = $pdo->prepare($sql);
-$stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+$stmt->bindValue(':user_id', $profile_user_id, PDO::PARAM_INT);
 $stmt->execute();
 
 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -47,12 +65,12 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile Page</title>
-    <link rel="stylesheet" href="styles/dashboard.css">
-    <link rel="stylesheet" href="styles/loader.css">
-    <link rel="stylesheet" href="styles/styles.css">
-    <link rel="stylesheet" href="styles/comments.css">
-    <link rel="stylesheet" href="styles/undo.css">
+    <title><?= htmlspecialchars($user["username"]) ?>'s Profile</title>
+    <link rel="stylesheet" href="../styles/dashboard.css">
+    <link rel="stylesheet" href="../styles/loader.css">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <link rel="stylesheet" href="../styles/comments.css">
+    <link rel="stylesheet" href="../styles/undo.css">
     <style>
         .container {
             height: auto;
@@ -66,17 +84,72 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             margin-top: 30px;
             margin-left: 0;
         }
+
+        .follow-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .stat-item {
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .stat-item:hover {
+            color: #1da1f2;
+        }
+
+        .stat-count {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .user-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .user-list-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-list-item img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .user-list-item a {
+            font-weight: bold;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .user-list-item a:hover {
+            color: #1da1f2;
+        }
+
+        .modal-content {
+            width: 400px;
+        }
     </style>
 </head>
 <body class="profile-page">
 
-<!--<div class="loader-container" id="loader">-->
-<!--    <div class="loader">-->
-<!--        <div></div>-->
-<!--        <div></div>-->
-<!--        <div></div>-->
-<!--    </div>-->
-<!--</div>-->
+<div class="loader-container" id="loader">
+    <div class="loader">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+</div>
 
 <!-- Top navbar -->
 <div class="navbar">
@@ -84,17 +157,15 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <h2>Profile</h2>
     </div>
     <div class="nav-right">
-        <a href="chat.php" class="btn">Messages</a>
-        <a href="posts.php" class="btn">Feed</a>
-        <a href="chat.php" class="btn">Messages</a>
-        <a href="favorites.php" class="btn">Favorites</a>
+        <a href="../dashboard.php" class="btn">My Profile</a>
+        <a href="../posts.php" class="btn">Feed</a>
+        <a href="../chat.php" class="btn">Messages</a>
+        <a href="../favorites.php" class="btn">Favorites</a>
         <button id="logoutConfirmBtn" class="btn">Logout</button>
     </div>
 </div>
 
 <div class="container">
-<!--    <h2>Welcome, --><?php //echo htmlspecialchars($user["username"]); ?><!--!</h2>-->
-
     <!-- Profile block -->
     <div class="profile-header">
         <div class="profile-left">
@@ -114,41 +185,30 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
         <div class="profile-buttons">
-            <button id="editProfileBtn">Edit profile</button>
+            <button id="followBtn" class="follow-btn <?= $isFollowing ? 'following' : '' ?>" data-user-id="<?= $profile_user_id ?>">
+                <?= $isFollowing ? 'Unfollow' : 'Follow' ?>
+            </button>
         </div>
     </div>
 
     <!-- User's posts section -->
     <div class="feed-container">
-        <h3>Your posts</h3>
-
-        <!-- Post form -->
-        <div class="post-form">
-            <img src="<?= htmlspecialchars($profilePic) ?>" class="avatar" alt="avatar">
-            <form action="acchandlers/post.php" method="POST" enctype="multipart/form-data" class="post-input">
-                <textarea name="content" placeholder="What's on your mind?" required></textarea>
-                <div class="post-actions">
-                    <input type="file" name="image">
-                    <button type="submit">Publish</button>
-                </div>
-            </form>
-        </div>
+        <h3><?= htmlspecialchars($user["username"]) ?>'s posts</h3>
 
         <!-- Posts list -->
         <div id="posts">
             <?php if (empty($posts)): ?>
-                <p>You haven't published any posts yet.</p>
+                <p>This user hasn't published any posts yet.</p>
             <?php else: ?>
                 <?php foreach ($posts as $post): ?>
                     <div class="post" data-post-id="<?= $post['id'] ?>">
                         <div class="post-header">
-                            <img src="<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar" alt="Profile picture">
-                            <p><?= htmlspecialchars($post['username']) ?></p>
-                            <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
+                            <img src="../<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar" alt="Profile picture">
+                            <a href="user_profile.php?id=<?= $post['user_id'] ?>" class="username-link"><?= htmlspecialchars($post['username']) ?></a>
                         </div>
                         <p><?= htmlspecialchars($post['content']) ?></p>
                         <?php if (!empty($post['image'])): ?>
-                            <img src="<?= htmlspecialchars($post['image']) ?>" class="post-image" alt="Post picture">
+                            <img src="../<?= htmlspecialchars($post['image']) ?>" class="post-image" alt="Post picture">
                         <?php endif; ?>
                         <div class="post-date"><?= $post['created_at'] ?></div>
 
@@ -172,7 +232,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             foreach ($comments as $comment):
                                 ?>
                                 <div class="comment" data-comment-id="<?= $comment['id'] ?>">
-                                    <img src="<?= htmlspecialchars($comment['profile_pic'] ?: 'upload/default.jpg') ?>" class="comment-avatar" alt="Avatar">
+                                    <img src="../<?= htmlspecialchars($comment['profile_pic'] ?: 'upload/default.jpg') ?>" class="comment-avatar" alt="Avatar">
                                     <div class="comment-content">
                                         <strong><?= htmlspecialchars($comment['username']) ?>:</strong>
                                         <span><?= htmlspecialchars($comment['content']) ?></span>
@@ -202,7 +262,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <span class="close" id="closeUserListModal">&times;</span>
             <h3 id="userListTitle">Followers</h3>
             <div id="userList" class="user-list">
-                <!-- Users will be loaded here via JavaScript -->
+
             </div>
         </div>
     </div>
@@ -217,124 +277,32 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
     </div>
-
-    <!-- Edit profile modal -->
-    <div id="editProfileModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>Edit profile</h3>
-
-            <!-- Toggle buttons -->
-            <div class="toggle-buttons">
-                <button id="photoToggleBtn" class="toggle-btn active">Change Photo</button>
-                <button id="infoToggleBtn" class="toggle-btn">Change Info</button>
-            </div>
-
-            <!-- Profile picture section -->
-            <div id="photoSection" class="modal-section active">
-                <div class="profile-pic-section">
-                    <img src="<?= htmlspecialchars($profilePic) ?>" class="edit-profile-pic" alt="Profile photo">
-                    <form id="profilePicForm" enctype="multipart/form-data">
-                        <input type="file" id="profilePic" name="profilePic" class="file-input">
-                        <button type="submit" class="dashboard__button">Upload new photo</button>
-                    </form>
-                    <p id="uploadMessage"></p>
-                </div>
-            </div>
-
-            <!-- Profile info section -->
-            <div id="infoSection" class="modal-section">
-                <form action="profile/update_profile.php" method="POST">
-                    <div class="edit__field">
-                        <label for="username">Username:</label>
-                        <input type="text" id="username" name="username" value="<?= htmlspecialchars($user["username"]) ?>" required>
-                    </div>
-
-                    <div class="edit__field">
-                        <label for="password">New password:</label>
-                        <input type="password" id="password" name="password">
-                    </div>
-
-                    <button class="dashboard__button" type="submit">Save changes</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <?php if (isset($_SESSION["update_success"])): ?>
-        <p class="success-message"><?= $_SESSION["update_success"] ?></p>
-        <?php unset($_SESSION["update_success"]); ?>
-    <?php elseif (isset($_SESSION["update_error"])): ?>
-        <p class="error-message"><?= $_SESSION["update_error"] ?></p>
-        <?php unset($_SESSION["update_error"]); ?>
-    <?php endif; ?>
 </div>
-<style>
-    .follow-stats {
-        display: flex;
-        gap: 20px;
-        margin-top: 10px;
-        justify-content: center;
-    }
-
-    .stat-item {
-        cursor: pointer;
-        text-align: center;
-    }
-
-    .stat-item:hover {
-        color: #1da1f2;
-    }
-
-    .stat-count {
-        font-weight: bold;
-        font-size: 18px;
-    }
-
-    .user-list {
-        max-height: 300px;
-        overflow-y: auto;
-        margin-top: 15px;
-    }
-
-    .user-list-item {
-        display: flex;
-        align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid #eee;
-    }
-
-    .user-list-item img {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        margin-right: 15px;
-    }
-
-    .user-list-item a {
-        font-weight: bold;
-        text-decoration: none;
-        color: #333;
-    }
-
-    .user-list-item a:hover {
-        color: #1da1f2;
-    }
-
-    .modal-content {
-        width: 400px;
-    }
-</style>
 
 <script>
-    setTimeout(() => {
-        document.getElementById("loader").classList.add("hidden");
-    }, 1500);
-
     document.addEventListener('DOMContentLoaded', function() {
-        const currentUserId = <?= json_encode($_SESSION['user_id']) ?>;
+        const currentUserId = <?= json_encode($current_user_id) ?>;
+        const profileUserId = <?= json_encode($profile_user_id) ?>;
 
-        // Followers/Following modal functionality
+        // Logout modal functionality
+        const logoutBtn = document.getElementById('logoutConfirmBtn');
+        const logoutModal = document.getElementById('logoutConfirmModal');
+        const confirmLogout = document.getElementById('confirmLogout');
+        const cancelLogout = document.getElementById('cancelLogout');
+
+        logoutBtn.addEventListener('click', function() {
+            logoutModal.style.display = 'block';
+        });
+
+        confirmLogout.addEventListener('click', function() {
+            window.location.href = '../auth/logout.php';
+        });
+
+        cancelLogout.addEventListener('click', function() {
+            logoutModal.style.display = 'none';
+        });
+
+        // User list modal functionality
         const followersBtn = document.getElementById('followers-stat');
         const followingBtn = document.getElementById('following-stat');
         const userListModal = document.getElementById('userListModal');
@@ -343,20 +311,24 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         const closeUserListModal = document.getElementById('closeUserListModal');
 
         followersBtn.addEventListener('click', function() {
-            loadUserList('followers', currentUserId);
+            loadUserList('followers', profileUserId);
         });
 
         followingBtn.addEventListener('click', function() {
-            loadUserList('following', currentUserId);
+            loadUserList('following', profileUserId);
         });
 
         closeUserListModal.addEventListener('click', function() {
             userListModal.style.display = 'none';
         });
 
+        // Close modal when clicking outside of it
         window.addEventListener('click', function(event) {
             if (event.target == userListModal) {
                 userListModal.style.display = 'none';
+            }
+            if (event.target == logoutModal) {
+                logoutModal.style.display = 'none';
             }
         });
 
@@ -365,7 +337,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             userList.innerHTML = '<p>Loading...</p>';
             userListModal.style.display = 'block';
 
-            fetch(`api/get_users.php?type=${type}&user_id=${userId}`)
+            fetch(`../api/get_users.php?type=${type}&user_id=${userId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -379,11 +351,11 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 const profilePic = user.profile_pic ? user.profile_pic : 'upload/default.jpg';
 
                                 item.innerHTML = `
-                                <img src="${profilePic}" alt="Profile picture">
-                                <a href="${user.id === currentUserId ? 'dashboard.php' : 'profile/user_profile.php?id=' + user.id}">
-                                    ${user.username}
-                                </a>
-                            `;
+                                    <img src="../${profilePic}" alt="Profile picture">
+                                    <a href="${user.id === currentUserId ? '../dashboard.php' : 'user_profile.php?id=' + user.id}">
+                                        ${user.username}
+                                    </a>
+                                `;
                                 userList.appendChild(item);
                             });
                         }
@@ -396,14 +368,18 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 });
         }
     });
+
+    setTimeout(() => {
+        document.getElementById("loader").classList.add("hidden");
+    }, 1500);
 </script>
 
-<script src="js/profile_page.js"></script>
-<script src="js/likes.js"></script>
-<script src="js/dislikes.js"></script>
-<script src="js/favorites.js"></script>
-<script src="js/comment.js"></script>
-<script src="js/delete.js"></script>
+<script src="../js/profile_page.js"></script>
+<script src="../js/likes.js"></script>
+<script src="../js/dislikes.js"></script>
+<script src="../js/favorites.js"></script>
+<script src="../js/comment.js"></script>
+<script src="../js/follow.js"></script>
 
 </body>
 </html>

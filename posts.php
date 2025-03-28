@@ -128,7 +128,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <img src="<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>"
                                  class="avatar"
                                  alt="Profile picture">
-                            <p><?= htmlspecialchars($post['username']) ?></p>
+                            <a href="profile/user_profile.php?id=<?= $post['user_id'] ?>" class="username-link"><?= htmlspecialchars($post['username']) ?></a>
                             <?php if ($post['user_id'] == $_SESSION["user_id"]): ?>
                                 <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
                             <?php endif; ?>
