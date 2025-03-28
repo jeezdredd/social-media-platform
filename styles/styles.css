@@ -20,15 +20,20 @@ body {
 
 /* Nav */
 .navbar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 240px;
+    padding: 20px;
+    background-color: #fff;
+    border-right: 1px solid #e6ecf0;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: white;
-    padding: 15px;
-    margin-top: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-    border-radius: 10px;
+    flex-direction: column;
+    z-index: 10;
+    border-radius: 0; /* Remove border radius */
+    margin-top: 0; /* Remove top margin */
+    box-shadow: none; /* Remove box shadow */
 }
 
 .navbar--mobile {
@@ -70,10 +75,7 @@ body {
 }
 
 .nav-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    flex-grow: 1;
+    margin-bottom: 30px;
 }
 
 .nav-left h2 {
@@ -82,29 +84,26 @@ body {
 
 .nav-right {
     display: flex;
+    flex-direction: column;
     gap: 15px;
-    margin-left: 10px;
+    margin-left: 0; /* Remove left margin */
 }
 
 .nav-right .btn {
+    display: flex;
+    align-items: center;
     text-decoration: none;
-    background: #1d9bf0;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-weight: bold;
+    color: #333;
+    font-weight: 500;
+    font-size: 18px;
+    padding: 10px 15px;
+    border-radius: 30px;
+    transition: background-color 0.2s;
 }
 
 .nav-right .btn:hover {
-    background: #0c7abf;
-}
-
-.nav-right .btn-danger {
-    background: #e0245e;
-}
-
-.nav-right .btn-danger:hover {
-    background: #c21d4b;
+    background-color: #e8f5fe;
+    color: #1da1f2;
 }
 
 /* Profile Styles */
@@ -137,17 +136,22 @@ body {
 }
 
 #logoutConfirmBtn {
-    background: #e0245e;
-    color: white;
-    padding: 10px 15px;
+    background: transparent;
+    color: #333;
     border: none;
-    border-radius: 4px;
+    font-weight: 500;
+    font-size: 18px;
+    padding: 10px 15px;
+    border-radius: 30px;
     cursor: pointer;
-    margin-top: 10px;
+    text-align: left;
+    transition: background-color 0.2s;
+    width: 100%;
 }
 
 #logoutConfirmBtn:hover {
-    background: #c21d4b;
+    background-color: #e8f5fe;
+    color: #1da1f2;
 }
 
 .modal-buttons {
@@ -190,12 +194,8 @@ body {
 }
 
 .container {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+    margin-left: 260px;
+    padding: 20px;
 }
 
 #uploadPhotoBtn, #editProfileBtn {
@@ -256,7 +256,7 @@ body {
     padding: 15px;
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-top: 80px;
+    margin-top: 30px;
 }
 
 button.more {

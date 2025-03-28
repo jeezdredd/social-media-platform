@@ -1,76 +1,91 @@
-const uploadModal = document.getElementById("uploadPhotoModal");
-const uploadBtn = document.getElementById("uploadPhotoBtn");
-const closeUploadBtn = uploadModal.querySelector(".close");
+document.addEventListener('DOMContentLoaded', function() {
+    // Modal handling for edit profile
+    const editModal = document.getElementById("editProfileModal");
+    const editBtn = document.getElementById("editProfileBtn");
+    const closeEditBtn = editModal.querySelector(".close");
 
-uploadBtn.onclick = function () {
-    uploadModal.style.display = "block";
-}
+    // Section toggle buttons
+    const photoToggleBtn = document.getElementById("photoToggleBtn");
+    const infoToggleBtn = document.getElementById("infoToggleBtn");
+    const photoSection = document.getElementById("photoSection");
+    const infoSection = document.getElementById("infoSection");
 
-closeUploadBtn.onclick = function () {
-    uploadModal.style.display = "none";
-}
-
-const editModal = document.getElementById("editProfileModal");
-const editBtn = document.getElementById("editProfileBtn");
-const closeEditBtn = editModal.querySelector(".close");
-
-[uploadModal, editModal].forEach((modal) => {
-    const modalBody = modal.querySelector(".modal-content");
-    modalBody.addEventListener("click", (e) => e.stopPropagation());
-
-    modal.addEventListener("click", (e) => {
-        console.log(e.target);
-        if (e.target.classList.contains("modal")) {
-            modal.style.display = "none";
-        }
+    // Toggle section functionality
+    photoToggleBtn.addEventListener("click", function() {
+        photoToggleBtn.classList.add("active");
+        infoToggleBtn.classList.remove("active");
+        photoSection.classList.add("active");
+        infoSection.classList.remove("active");
     });
-});
 
-editBtn.onclick = function () {
-    editModal.style.display = "block";
-}
+    infoToggleBtn.addEventListener("click", function() {
+        infoToggleBtn.classList.add("active");
+        photoToggleBtn.classList.remove("active");
+        infoSection.classList.add("active");
+        photoSection.classList.remove("active");
+    });
 
-closeEditBtn.onclick = function () {
-    editModal.style.display = "none";
-}
-
-window.onclick = function (event) {
-    if (event.target == uploadModal) {
-        uploadModal.style.display = "none";
+    // Open edit profile modal
+    editBtn.onclick = function() {
+        editModal.style.display = "block";
     }
-    if (event.target == editModal) {
+
+    // Close edit profile modal
+    closeEditBtn.onclick = function() {
         editModal.style.display = "none";
     }
-}
 
-    document.getElementById("profilePicForm").addEventListener("submit", async function(event) {
-        event.preventDefault();
-        const formData = new FormData(this);
-        const response = await fetch("profile/upload_profile.php", { method: "POST", body: formData });
-        const result = await response.json();
-        document.getElementById("uploadMessage").innerText = result.message;
-        if (result.success) location.reload();
-    });
-
-const logoutModal = document.getElementById("logoutConfirmModal");
-const logoutBtn = document.getElementById("logoutConfirmBtn");
-const confirmLogout = document.getElementById("confirmLogout");
-const cancelLogout = document.getElementById("cancelLogout");
-
-logoutBtn.onclick = function () {
-    logoutModal.style.display = "block";
-}
-
-cancelLogout.onclick = function () {
-    logoutModal.style.display = "none";
-}
-
-    confirmLogout.onclick = function () {
-        window.location.href = "/dmuk-coursework/auth/logout.php";
-    }
-
-    window.onclick = function (event) {
-        if (event.target === logoutModal) {
+    // Handle modals when clicking outside content area
+    window.onclick = function(event) {
+        if (event.target == editModal) {
+            editModal.style.display = "none";
+        }
+        if (event.target == logoutModal) {
             logoutModal.style.display = "none";
         }
     }
+
+    // Profile picture upload handling
+    document.getElementById("profilePicForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const uploadMessage = document.getElementById("uploadMessage");
+        uploadMessage.innerText = "Uploading...";
+
+        try {
+            const response = await fetch("profile/upload_profile.php", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+            uploadMessage.innerText = result.message;
+
+            if (result.success) {
+                // Reload page after showing success message
+                setTimeout(() => location.reload(), 1000);
+            }
+        } catch (error) {
+            uploadMessage.innerText = "Error uploading profile picture";
+            console.error("Upload error:", error);
+        }
+    });
+
+    // Logout confirmation handling
+    const logoutModal = document.getElementById("logoutConfirmModal");
+    const logoutBtn = document.getElementById("logoutConfirmBtn");
+    const confirmLogout = document.getElementById("confirmLogout");
+    const cancelLogout = document.getElementById("cancelLogout");
+
+    logoutBtn.onclick = function() {
+        logoutModal.style.display = "block";
+    }
+
+    cancelLogout.onclick = function() {
+        logoutModal.style.display = "none";
+    }
+
+    confirmLogout.onclick = function() {
+        window.location.href = "auth/logout.php";
+    }
+});
