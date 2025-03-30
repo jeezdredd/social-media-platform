@@ -1,6 +1,8 @@
 <?php
 require_once "auth/auth_check.php";
 require_once "db/database.php";
+require_once "db/queries/get_user.php";
+require_once "db/queries/complaints/get_my_complaints.php";
 
 if (!isset($_SESSION["user_id"])) {
     header("Location: login.php");
@@ -12,9 +14,11 @@ $success_message = $_SESSION['success_message'] ?? null;
 $error_message = $_SESSION['error_message'] ?? null;
 unset($_SESSION['success_message'], $_SESSION['error_message']);
 
-$stmtUser = $pdo->prepare("SELECT username, profile_pic FROM users WHERE id = ?");
+$stmtUser = $pdo->prepare("SELECT id, username, profile_pic, is_admin FROM users WHERE id = ?");
 $stmtUser->execute([$_SESSION["user_id"]]);
 $user = $stmtUser->fetch(PDO::FETCH_ASSOC);
+
+$complaints = getMyComplaints($pdo);
 
 $limit = $_GET['offset'] ?? 7;
 
@@ -60,10 +64,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <link rel="stylesheet" href="styles/loader.css">
     </head>
     <body>
-    <script>
-        const currentUserId = <?= json_encode($_SESSION['user_id']) ?>;
-        console.log("Current user id:", currentUserId);
-    </script>
 
     <audio id="notifySound" src="sounds/notify.mp3" preload="auto"></audio>
 
@@ -84,6 +84,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <a href="dashboard.php" class="btn">Profile</a>
             <a href="chat.php" class="btn">Messages</a>
             <a href="favorites.php" class="btn">Favorites</a>
+            <?= $user['is_admin'] != 0 ? '<a href="moderation.php" class="btn">Moderation</a>' : ''; ?>
             <button id="toggleNotifications" class="btn">Mute notifications</button>
             <a href="auth/logout.php" class="btn btn-danger">Logout</a>
         </div>
@@ -109,7 +110,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="navbar__list">
             <a href="dashboard.php" class="btn">Profile</a>
             <a href="chat.php" class="btn">Messages</a>
-            <a href="#" class="btn">Settings</a>
+            <?= $user['is_admin'] != 0 ? '<a href="moderation.php" class="btn">Moderation</a>' : ''; ?>
             <button id="toggleNotifications" class="btn">Mute notifications</button>
             <a href="auth/logout.php" class="btn btn-danger">Logout</a>
         </div>
@@ -133,13 +134,30 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <?php foreach ($posts as $post): ?>
                     <div class="post" data-post-id="<?= $post['id'] ?>">
                         <div class="post-header">
-                            <img src="<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>"
-                                 class="avatar"
-                                 alt="Profile picture">
-                            <a href="profile/user_profile.php?id=<?= $post['user_id'] ?>" class="username-link"><?= htmlspecialchars($post['username']) ?></a>
-                            <?php if ($post['user_id'] == $_SESSION["user_id"]): ?>
-                                <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
-                            <?php endif; ?>
+                            <div class="post-header__left">
+                                <img src="<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>"
+                                    class="avatar"
+                                    alt="Profile picture">
+                                <a href="profile/user_profile.php?id=<?= $post['user_id'] ?>" class="username-link"><?= htmlspecialchars($post['username']) ?></a>
+                            </div>
+                            <div class="post-header__right">
+                                <?php if ($post['user_id'] == $_SESSION["user_id"]): ?>
+                                    <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
+                                <?php endif; ?>
+                                <?php if ($user['id'] != $post['user_id']): ?>
+                                    <?php if (in_array($post['id'], $complaints)): ?>
+                                        <div>Complaint is already sent!</div>
+                                    <?php else: ?>
+                                        <button 
+                                            class="post__complain" 
+                                            data-post-id="<?= $post['id'] ?>" 
+                                            data-user-id="<?= $user['id'] ?>"
+                                        >
+                                            Complain
+                                        </button>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <p><?= htmlspecialchars($post['content']) ?></p>
                         <?php if (!empty($post['image'])): ?>
@@ -211,6 +229,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="js/notification.js"></script>
     <script src="js/delete.js"></script>
     <script src="js/mobile_menu.js"></script>
+    <script src="js/create_complaint.js"></script>
 
     <script>
         setTimeout(() => {

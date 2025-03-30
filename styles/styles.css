@@ -388,11 +388,22 @@ button.more {
     border-bottom: 1px solid #e1e8ed;
 }
 
+.post__complain {
+    background-color: rgb(225, 53, 53);
+    color: white;
+    font-weight: bold;
+}
+
+.post__complain:hover {
+    background-color: rgb(255, 0, 0);
+}
+
 .post-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     gap: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 15px;
 }
 
 .post-header p {
