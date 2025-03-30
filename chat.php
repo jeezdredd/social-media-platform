@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once "auth/auth_check.php";
 require_once 'db/database.php';
 
@@ -9,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-$stmt = $pdo->prepare("SELECT id, username, status, profile_pic, last_seen FROM users WHERE id != ?");
+$stmt = $pdo->prepare("SELECT id, username, status, profile_pic, last_seen FROM users WHERE id != ? ORDER BY status DESC, username ASC");
 $stmt->execute([$user_id]);
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -38,7 +39,7 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php
     function formatLastSeen($timestamp)
     {
-        if (!$timestamp) return "Неизвестно";
+        if (!$timestamp) return "Unknown";
 
         $time = strtotime($timestamp);
         $now = time();
@@ -53,7 +54,6 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return date("d.m.Y at H:i", $time);
         }
     }
-
     ?>
 
     <div class="user-list">
@@ -64,32 +64,42 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $avatarPath = htmlspecialchars($user['profile_pic'] ?: 'upload/default.jpg');
             ?>
             <button class="user-item" data-user-id="<?= $user['id'] ?>">
-            <span class="status <?= $user['status'] ?>">
-                <?= $user['status'] === 'online' ? '🟢 Online' : '⚪' ?>
-            </span>
-                <img src="<?= $avatarPath ?>" alt="avatar" class="user-avatar">
-                <?= htmlspecialchars($user['username']) ?>
-                <br>
-                <span class="last-seen"><?= $user['status'] === 'online' ? '' : "Last seen: $lastSeen" ?></span>
+                <div class="user-header">
+                    <img src="<?= $avatarPath ?>" alt="avatar" class="user-avatar">
+                    <span class="user-name"><?= htmlspecialchars($user['username']) ?></span>
+                </div>
+                <span class="status <?= $user['status'] ?>">
+                    <?= $user['status'] === 'online' ? '🟢 Online now' : '⚪ Offline' ?>
+                </span>
+                <?php if ($user['status'] !== 'online'): ?>
+                    <span class="last-seen">Last seen: <?= $lastSeen ?></span>
+                <?php endif; ?>
             </button>
         <?php endforeach; ?>
     </div>
 
     <div class="chat-box">
-        <h3 id="chat-title">Chat</h3>
-        <div id="messages"></div>
+        <h3 id="chat-title">Select a user to start chatting</h3>
+        <div id="messages">
+            <div class="no-messages">
+                <i class="message-icon">💬</i>
+                <p>Select a user to start a conversation</p>
+            </div>
+        </div>
         <form id="chat-form">
-            <input type="text" id="message-input" placeholder="Enter your message..." required>
-            <button type="submit" id="send-button">Send</button>
+            <input type="text" id="message-input" placeholder="Type a message..." required disabled>
+            <button type="submit" id="send-button"></button>
         </form>
     </div>
-    <a href="posts.php">To feed page</a>
 </div>
+
+<a href="posts.php" class="nav-link">← Back to feed</a>
+
 <script src="js/chat.js" defer></script>
 <script>
     setTimeout(() => {
         document.getElementById("loader").classList.add("hidden");
-    }, 1500);
+    }, 1000);
 </script>
 </body>
 </html>

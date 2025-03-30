@@ -86,7 +86,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="nav-right">
         <a href="chat.php" class="btn">Messages</a>
         <a href="posts.php" class="btn">Feed</a>
-        <a href="chat.php" class="btn">Messages</a>
         <a href="favorites.php" class="btn">Favorites</a>
         <button id="logoutConfirmBtn" class="btn">Logout</button>
     </div>

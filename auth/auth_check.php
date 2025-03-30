@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Unauthorized access log
 const SECURITY_LOG = __DIR__ . "/../logs/security.log";
