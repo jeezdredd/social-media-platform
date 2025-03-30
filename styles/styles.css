@@ -302,7 +302,7 @@ body {
 
 button.more {
     width: 100%;
-    margin-top: 10px;
+    margin: 10px 20px 10px;
 }
 
 /* Publish form */
@@ -421,7 +421,7 @@ button.more {
     object-fit: cover;
 }
 
-.like-btn {
+.like-btn, .dislike-btn {
     margin: 10px 0;
     background-color: transparent;
     color: #007bff;
@@ -471,6 +471,10 @@ button:hover {
     background: #0056b3;
 }
 
+.like-btn.active, .dislike-btn.active {
+    background-color: #007bff;
+    color: white;
+}
 
 .success-message {
     color: green;
@@ -495,12 +499,28 @@ button:hover {
     color: #ff5722;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+    .navbar {
+        display: none;
+    }
+
+    .burger {
+        display: block;
+    }
+
+    .navbar--mobile {
+        display: grid;
+        place-items: center;
+    }
+
     .feed-container {
         width: 90%;
         min-width: unset;
+        margin-left: 0;
     }
+}
 
+@media (max-width: 768px) {
     .post-input__area {
         width: 100%;
     }
@@ -513,19 +533,6 @@ button:hover {
     .post-actions button {
         margin-top: 10px;
         margin-left: 0;
-    }
-
-    .navbar {
-        display: none;
-    }
-
-    .burger {
-        display: block;
-    }
-
-    .navbar--mobile {
-        display: grid;
-        place-items: center;
     }
 }
 

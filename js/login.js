@@ -14,12 +14,13 @@ async function login() {
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
         });
-
+        
         if (!response.ok) {
             throw new Error(`Server error: ${response.status}`);
         }
-
+        
         let result = await response.json();
+        console.log(result);
         console.log("Server response:", result);
 
         errorMessage.innerText = result.message;

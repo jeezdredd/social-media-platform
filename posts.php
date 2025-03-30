@@ -6,6 +6,7 @@ if (!isset($_SESSION["user_id"])) {
     header("Location: login.php");
     exit;
 }
+$user_id = $_SESSION['user_id'];
 
 $success_message = $_SESSION['success_message'] ?? null;
 $error_message = $_SESSION['error_message'] ?? null;
@@ -17,11 +18,18 @@ $user = $stmtUser->fetch(PDO::FETCH_ASSOC);
 
 $limit = $_GET['offset'] ?? 7;
 
+$stmtUserLikes = $pdo->prepare("SELECT post_id FROM likes WHERE user_id = ?");
+$stmtUserLikes->execute([$user_id]);
+$userLikes = $stmtUserLikes->fetchAll(PDO::FETCH_COLUMN);
+
+$stmtUserDislikes = $pdo->prepare("SELECT post_id FROM dislikes WHERE user_id = ?");
+$stmtUserDislikes->execute([$user_id]);
+$userDislikes = $stmtUserDislikes->fetchAll(PDO::FETCH_COLUMN);
+
 $totalSql = "SELECT COUNT(*) FROM posts";
 $stmt = $pdo->query($totalSql);
 $totalPosts = $stmt->fetchColumn();
 
-$user_id = $_SESSION['user_id'];
 $stmt = $pdo->prepare("SELECT post_id FROM favorites WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $favorites = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -140,12 +148,12 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <div class="post-date"><?= $post['created_at'] ?></div>
 
                         <!-- likes button -->
-                        <button class="like-btn" data-post-id="<?= $post['id'] ?>">
+                        <button class="like-btn <?= in_array($post['id'], $userLikes) ? "active" : ""; ?>" data-post-id="<?= $post['id'] ?>">
                             ❤️ <span class="like-count"><?= $post['likes_count'] ?></span>
                         </button>
 
                         <!-- dislike button -->
-                        <button class="dislike-btn" data-post-id="<?= $post['id'] ?>">
+                        <button class="dislike-btn <?= in_array($post['id'], $userDislikes) ? "active" : ""; ?>" data-post-id="<?= $post['id'] ?>" data-post-id="<?= $post['id'] ?>">
                             👎 <span class="dislike-count"><?= $post['dislikes_count'] ?></span>
                         </button>
 
