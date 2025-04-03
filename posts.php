@@ -133,37 +133,82 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div id="posts">
                 <?php foreach ($posts as $post): ?>
                     <div class="post" data-post-id="<?= $post['id'] ?>">
-                        <div class="post-header">
-                            <div class="post-header__left">
-                                <img src="<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>"
-                                    class="avatar"
-                                    alt="Profile picture">
-                                <a href="profile/user_profile.php?id=<?= $post['user_id'] ?>" class="username-link"><?= htmlspecialchars($post['username']) ?></a>
-                            </div>
-                            <div class="post-header__right">
-                                <?php if ($post['user_id'] == $_SESSION["user_id"]): ?>
-                                    <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
-                                <?php endif; ?>
-                                <?php if ($user['id'] != $post['user_id']): ?>
-                                    <?php if (in_array($post['id'], $complaints)): ?>
-                                        <div>Complaint is already sent!</div>
-                                    <?php else: ?>
-                                        <button 
-                                            class="post__complain" 
-                                            data-post-id="<?= $post['id'] ?>" 
-                                            data-user-id="<?= $user['id'] ?>"
-                                        >
-                                            Complain
-                                        </button>
+                        <?php if (isset($post['is_share']) && $post['is_share'] == 1 && isset($post['original_post_id'])): ?>
+                            <!-- Regular post header showing who shared -->
+                            <div class="post-header">
+                                <div class="post-header__left">
+                                    <img src="<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar" alt="Profile picture">
+                                    <a href="profile/user_profile.php?id=<?= $post['user_id'] ?>" class="username-link">
+                                        <?= htmlspecialchars($post['username']) ?>
+                                        <span class="repost-label">reposted</span>
+                                    </a>
+                                </div>
+                                <div class="post-header__right">
+                                    <?php if ($post['user_id'] == $_SESSION["user_id"]): ?>
+                                        <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
                                     <?php endif; ?>
-                                <?php endif; ?>
+                                </div>
                             </div>
-                        </div>
-                        <p><?= htmlspecialchars($post['content']) ?></p>
-                        <?php if (!empty($post['image'])): ?>
-                            <img src="<?= htmlspecialchars($post['image']) ?>" class="post-image" alt="Post picture">
+
+                            <!-- Share comment from reposter -->
+                            <?php if (isset($post['share_comment']) && !empty($post['share_comment'])): ?>
+                                <div class="user-share-comment"><?= htmlspecialchars($post['share_comment']) ?></div>
+                            <?php endif; ?>
+
+                            <!-- Original post in a box -->
+                            <div class="repost-container">
+                                <?php
+                                $stmtOriginal = $pdo->prepare("SELECT posts.*, users.username, users.profile_pic FROM posts
+              INNER JOIN users ON posts.user_id = users.id
+              WHERE posts.id = ?");
+                                $stmtOriginal->execute([$post['original_post_id']]);
+                                $originalPost = $stmtOriginal->fetch(PDO::FETCH_ASSOC);
+                                ?>
+                                <div class="original-post">
+                                    <div class="original-post-header">
+                                        <img src="<?= htmlspecialchars($originalPost['profile_pic'] ?? 'upload/default.jpg') ?>" class="avatar" alt="Profile picture">
+                                        <a href="profile/user_profile.php?id=<?= $originalPost['user_id'] ?? '#' ?>" class="username-link">
+                                            <?= htmlspecialchars($originalPost['username'] ?? 'Unknown user') ?>
+                                        </a>
+                                    </div>
+                                    <p class="original-post-content"><?= htmlspecialchars($originalPost['content'] ?? '') ?></p>
+                                    <?php if (!empty($originalPost['image'])): ?>
+                                        <img src="<?= htmlspecialchars($originalPost['image']) ?>" class="post-image" alt="Post image">
+                                    <?php endif; ?>
+                                    <div class="post-date"><?= $originalPost['created_at'] ?? '' ?></div>
+                                </div>
+                            </div>
+                        <?php else: ?>
+                            <div class="post-header">
+                                <div class="post-header__left">
+                                    <img src="<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar" alt="Profile picture">
+                                    <a href="profile/user_profile.php?id=<?= $post['user_id'] ?>" class="username-link"><?= htmlspecialchars($post['username']) ?></a>
+                                </div>
+                                <div class="post-header__right">
+                                    <?php if ($post['user_id'] == $_SESSION["user_id"]): ?>
+                                        <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
+                                    <?php endif; ?>
+                                    <?php if ($user['id'] != $post['user_id']): ?>
+                                        <?php if (in_array($post['id'], $complaints)): ?>
+                                            <div>Complaint is already sent!</div>
+                                        <?php else: ?>
+                                            <button
+                                                    class="post__complain"
+                                                    data-post-id="<?= $post['id'] ?>"
+                                                    data-user-id="<?= $user['id'] ?>"
+                                            >
+                                                Complain
+                                            </button>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <p><?= htmlspecialchars($post['content']) ?></p>
+                            <?php if (!empty($post['image'])): ?>
+                                <img src="<?= htmlspecialchars($post['image']) ?>" class="post-image" alt="Post picture">
+                            <?php endif; ?>
+                            <div class="post-date"><?= $post['created_at'] ?></div>
                         <?php endif; ?>
-                        <div class="post-date"><?= $post['created_at'] ?></div>
 
                         <!-- likes button -->
                         <button class="like-btn <?= in_array($post['id'], $userLikes) ? "active" : ""; ?>" data-post-id="<?= $post['id'] ?>">
@@ -171,8 +216,13 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </button>
 
                         <!-- dislike button -->
-                        <button class="dislike-btn <?= in_array($post['id'], $userDislikes) ? "active" : ""; ?>" data-post-id="<?= $post['id'] ?>" data-post-id="<?= $post['id'] ?>">
+                        <button class="dislike-btn <?= in_array($post['id'], $userDislikes) ? "active" : ""; ?>" data-post-id="<?= $post['id'] ?>">
                             👎 <span class="dislike-count"><?= $post['dislikes_count'] ?></span>
+                        </button>
+
+                        <!-- share button -->
+                        <button class="share-btn" data-post-id="<?= $post['id'] ?>">
+                            🔄 Share
                         </button>
 
                         <!-- favorites button -->
@@ -229,6 +279,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="js/notification.js"></script>
     <script src="js/delete.js"></script>
     <script src="js/mobile_menu.js"></script>
+    <script src="js/share.js"></script>
     <script src="js/create_complaint.js"></script>
 
     <script>
@@ -243,34 +294,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         moreBtn.addEventListener("click", () => {
             window.location.href = `posts.php?offset=${parseInt(currentLimit) + 7}`;
         })
-    </script>
-
-    <!-- posts page script for notification mute button  -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-
-            if (localStorage.getItem("notificationsEnabled") === null) {
-                localStorage.setItem("notificationsEnabled", "true");
-            }
-            let toggleBtn = document.getElementById("toggleNotifications");
-
-            function updateToggleText() {
-                let enabled = localStorage.getItem("notificationsEnabled");
-                toggleBtn.textContent = (enabled === "true") ? "Mute notifications" : "Unmute notifications";
-            }
-
-            updateToggleText();
-
-            toggleBtn.addEventListener("click", function () {
-                let enabled = localStorage.getItem("notificationsEnabled");
-                if (enabled === "true") {
-                    localStorage.setItem("notificationsEnabled", "false");
-                } else {
-                    localStorage.setItem("notificationsEnabled", "true");
-                }
-                updateToggleText();
-            });
-        });
     </script>
 
     </body>

@@ -15,8 +15,19 @@ if (!$user) {
 
 $profilePic = $user['profile_pic'] ?: 'upload/default.jpg';
 
-// Get user's own posts
+
+// User ID
 $user_id = $_SESSION['user_id'];
+
+// Get user likes and dislikes
+$stmtUserLikes = $pdo->prepare("SELECT post_id FROM likes WHERE user_id = ?");
+$stmtUserLikes->execute([$user_id]);
+$userLikes = $stmtUserLikes->fetchAll(PDO::FETCH_COLUMN);
+
+$stmtUserDislikes = $pdo->prepare("SELECT post_id FROM dislikes WHERE user_id = ?");
+$stmtUserDislikes->execute([$user_id]);
+$userDislikes = $stmtUserDislikes->fetchAll(PDO::FETCH_COLUMN);
+
 $stmt = $pdo->prepare("SELECT post_id FROM favorites WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $favorites = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -92,7 +103,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 <div class="container">
-<!--    <h2>Welcome, --><?php //echo htmlspecialchars($user["username"]); ?><!--!</h2>-->
 
     <!-- Profile block -->
     <div class="profile-header">
@@ -136,28 +146,85 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <!-- Posts list -->
         <div id="posts">
             <?php if (empty($posts)): ?>
-                <p>You haven't published any posts yet.</p>
+                <p>You haven't posted anything yet.</p>
             <?php else: ?>
                 <?php foreach ($posts as $post): ?>
                     <div class="post" data-post-id="<?= $post['id'] ?>">
-                        <div class="post-header">
-                            <img src="<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar" alt="Profile picture">
-                            <p><?= htmlspecialchars($post['username']) ?></p>
-                            <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
-                        </div>
-                        <p><?= htmlspecialchars($post['content']) ?></p>
-                        <?php if (!empty($post['image'])): ?>
-                            <img src="<?= htmlspecialchars($post['image']) ?>" class="post-image" alt="Post picture">
+                        <?php if (isset($post['is_share']) && $post['is_share'] == 1 && isset($post['original_post_id'])): ?>
+                            <!-- Regular post header showing who shared -->
+                            <div class="post-header">
+                                <div class="post-header__left">
+                                    <img src="<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar" alt="Profile picture">
+                                    <a href="profile/user_profile.php?id=<?= $post['user_id'] ?>" class="username-link">
+                                        <?= htmlspecialchars($post['username']) ?>
+                                        <span class="repost-label">reposted</span>
+                                    </a>
+                                </div>
+                                <div class="post-header__right">
+                                    <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
+                                </div>
+                            </div>
+
+                            <!-- Share comment from reposter -->
+                            <?php if (isset($post['share_comment']) && !empty($post['share_comment'])): ?>
+                                <div class="user-share-comment"><?= htmlspecialchars($post['share_comment']) ?></div>
+                            <?php endif; ?>
+
+                            <!-- Original post in a box -->
+                            <div class="repost-container">
+                                <?php
+                                $stmtOriginal = $pdo->prepare("SELECT posts.*, users.username, users.profile_pic FROM posts
+                                  INNER JOIN users ON posts.user_id = users.id
+                                  WHERE posts.id = ?");
+                                $stmtOriginal->execute([$post['original_post_id']]);
+                                $originalPost = $stmtOriginal->fetch(PDO::FETCH_ASSOC);
+                                ?>
+                                <div class="original-post">
+                                    <div class="original-post-header">
+                                        <img src="<?= htmlspecialchars($originalPost['profile_pic'] ?? 'upload/default.jpg') ?>" class="avatar" alt="Profile picture">
+                                        <a href="profile/user_profile.php?id=<?= $originalPost['user_id'] ?? '#' ?>" class="username-link">
+                                            <?= htmlspecialchars($originalPost['username'] ?? 'Unknown user') ?>
+                                        </a>
+                                    </div>
+                                    <p class="original-post-content"><?= htmlspecialchars($originalPost['content'] ?? '') ?></p>
+                                    <?php if (!empty($originalPost['image'])): ?>
+                                        <img src="<?= htmlspecialchars($originalPost['image']) ?>" class="post-image" alt="Post image">
+                                    <?php endif; ?>
+                                    <div class="post-date"><?= $originalPost['created_at'] ?? '' ?></div>
+                                </div>
+                            </div>
+                        <?php else: ?>
+
+                            <!-- Regular post display -->
+                            <div class="post-header">
+                                <div class="post-header__left">
+                                    <img src="<?= htmlspecialchars($post['profile_pic'] ?: 'upload/default.jpg') ?>" class="avatar" alt="Profile picture">
+                                    <a href="profile/user_profile.php?id=<?= $post['user_id'] ?>" class="username-link"><?= htmlspecialchars($post['username']) ?></a>
+                                </div>
+                                <div class="post-header__right">
+                                    <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
+                                </div>
+                            </div>
+                            <p><?= htmlspecialchars($post['content']) ?></p>
+                            <?php if (!empty($post['image'])): ?>
+                                <img src="<?= htmlspecialchars($post['image']) ?>" class="post-image" alt="Post picture">
+                            <?php endif; ?>
+                            <div class="post-date"><?= $post['created_at'] ?></div>
                         <?php endif; ?>
-                        <div class="post-date"><?= $post['created_at'] ?></div>
 
                         <!-- Post actions -->
-                        <button class="like-btn" data-post-id="<?= $post['id'] ?>">
-                            ❤️ <span class="like-count"><?= $post['likes_count'] ?></span>
+                        <button class="like-btn <?= in_array($post['id'], $userLikes ?? []) ? "active" : ""; ?>" data-post-id="<?= $post['id'] ?>">
+                            ❤️ <span class="like-count"><?= $post['likes_count'] ?? 0 ?></span>
                         </button>
-                        <button class="dislike-btn" data-post-id="<?= $post['id'] ?>">
-                            👎 <span class="dislike-count"><?= $post['dislikes_count'] ?></span>
+
+                        <button class="dislike-btn <?= in_array($post['id'], $userDislikes ?? []) ? "active" : ""; ?>" data-post-id="<?= $post['id'] ?>">
+                            👎 <span class="dislike-count"><?= $post['dislikes_count'] ?? 0 ?></span>
                         </button>
+
+                        <button class="share-btn" data-post-id="<?= $post['id'] ?>">
+                            🔄 Share
+                        </button>
+
                         <button class="favorite-btn" data-id="<?= $post['id']; ?>">
                             <?= in_array($post['id'], $favorites) ? '✅ In favorites' : '⭐ Add to favorites'; ?>
                         </button>
@@ -402,6 +469,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script src="js/dislikes.js"></script>
 <script src="js/favorites.js"></script>
 <script src="js/comment.js"></script>
+<script src="js/share.js"></script>
 <script src="js/delete.js"></script>
 
 </body>

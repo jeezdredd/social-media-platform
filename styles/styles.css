@@ -273,7 +273,7 @@ body {
     position: relative;
 }
 
-/* Кнопка закрытия */
+/* Close button */
 .close {
     position: absolute;
     top: 10px;
@@ -303,6 +303,78 @@ body {
 button.more {
     width: 100%;
     margin: 10px 20px 10px;
+}
+
+/* Shared post */
+.repost-label {
+    color: #536471;
+    font-weight: normal;
+    font-size: 14px;
+    margin-left: 5px;
+}
+
+.user-share-comment {
+    margin: 8px 0 20px 0; /* Increased bottom margin to 20px */
+    font-size: 15px;
+    color: #0f1419;
+    line-height: 1.4;
+}
+
+/* Container for the reposted content */
+.repost-container {
+    border: 1px solid #cfd9de;
+    border-radius: 16px;
+    margin-bottom: 15px;
+    overflow: hidden; /* Ensures content stays within rounded corners */
+}
+
+/* Original post styling */
+.original-post {
+    padding: 12px;
+    background-color: #f7f9fa;
+}
+
+.original-post-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.original-post-content {
+    margin: 8px 0;
+    font-size: 15px;
+    line-height: 1.4;
+    color: #0f1419;
+}
+
+.original-post .avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.original-post .username-link {
+    font-weight: bold;
+    color: #0f1419;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.original-post .username-link:hover {
+    text-decoration: underline;
+}
+
+.original-post .post-image {
+    max-width: 100%;
+    border-radius: 12px;
+    margin-top: 8px;
+}
+
+.original-post .post-date {
+    font-size: 12px;
+    color: #536471;
+    margin-top: 8px;
 }
 
 /* Publish form */
