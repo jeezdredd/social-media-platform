@@ -2,9 +2,9 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-global $pdo;
 session_start();
 require_once '../db/database.php';
+require_once '../websocket/notify.php';
 
 // Check if authorized
 if (!isset($_SESSION['user_id'])) {
@@ -40,6 +40,14 @@ if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR
 try {
     $stmt = $pdo->prepare("INSERT INTO posts (user_id, content, image) VALUES (?, ?, ?)");
     $stmt->execute([$user_id, $content, $imagePath]);
+
+    $postId = $pdo->lastInsertId();
+
+    $stmt = $pdo->prepare("SELECT username FROM users WHERE id = ?");
+    $stmt->execute([$user_id]);
+    $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    notifyNewPost($postId, $user_id, $userData['username']);
 
     $_SESSION['success_message'] = "Post published!";
     header("Location: ../posts.php");

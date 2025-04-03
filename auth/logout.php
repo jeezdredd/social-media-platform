@@ -1,6 +1,6 @@
 <?php
-global $pdo;
 session_start();
+require_once '../auth/auth_check.php';
 require_once '../db/database.php';
 
 if (isset($_SESSION['user_id'])) {

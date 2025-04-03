@@ -8,19 +8,21 @@ async function login() {
         return;
     }
 
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('password', password);
+
     try {
         let response = await fetch('auth/login.php', {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+            body: formData
         });
-        
+
         if (!response.ok) {
             throw new Error(`Server error: ${response.status}`);
         }
-        
+
         let result = await response.json();
-        console.log(result);
         console.log("Server response:", result);
 
         errorMessage.innerText = result.message;
@@ -28,7 +30,7 @@ async function login() {
         if (result.success) {
             localStorage.removeItem("lastPostId");
             localStorage.removeItem("lastCommentId");
-            window.location.href = result.redirect || "dashboard.php";
+            window.location.href = result.redirect;
         }
     } catch (error) {
         console.error("Login error:", error);

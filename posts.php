@@ -63,7 +63,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <link rel="stylesheet" href="styles/undo.css">
         <link rel="stylesheet" href="styles/loader.css">
     </head>
-    <body>
+    <body data-user-id="<?= $_SESSION['user_id'] ?>">
 
     <audio id="notifySound" src="sounds/notify.mp3" preload="auto"></audio>
 

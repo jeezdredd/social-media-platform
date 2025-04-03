@@ -1,3 +1,20 @@
+<?php
+/**
+ * User Login Page
+ *
+ * This file provides the user interface for login functionality.
+ *
+ * Features:
+ * - Login form with email and password fields
+ * - Client-side form submission handling
+ * - Link to registration page for new users
+ *
+ * Dependencies:
+ * - js/login.js for form submission handling and validation
+ * - styles/login.css for page styling
+ */
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

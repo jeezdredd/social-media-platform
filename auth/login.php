@@ -1,5 +1,18 @@
 <?php
+header('Content-Type: application/json');
+
+ini_set('display_errors', 0);
+error_reporting(0);
+
+session_start();
 require_once '../db/database.php';
+
+
+// Verify database connection
+if (!isset($pdo)) {
+    echo json_encode(["success" => false, "message" => "Database connection failed"], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
 session_set_cookie_params([
     'lifetime' => 3600,
@@ -10,18 +23,18 @@ session_set_cookie_params([
     'samesite' => 'Strict'
 ]);
 
-session_start();
-
 if (isset($_SESSION["user_id"])) {
-    header("Location: dashboard.php");
+    echo json_encode(["success" => true, "message" => "Already logged in", "redirect" => "dashboard.php"]);
     exit;
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     try {
+        // Sanitize user inputs
         $email = filter_var(trim($_POST["email"]), FILTER_SANITIZE_EMAIL);
         $password = trim($_POST["password"]);
 
+        // Validate email format
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             echo json_encode(["success" => false, "message" => "Incorrect email!"], JSON_UNESCAPED_UNICODE);
             exit;
@@ -40,7 +53,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_SESSION["user_id"] = $user["id"];
             $_SESSION["username"] = $user["username"];
 
-            // Обновляем статус пользователя на "онлайн"
             $stmt = $pdo->prepare("UPDATE users SET status = 'online' WHERE id = ?");
             $stmt->execute([$user["id"]]);
 

@@ -1,6 +1,6 @@
 <?php
-global $pdo;
 require_once "../db/database.php";
+require_once "../websocket/notify.php";
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -16,41 +16,56 @@ if (!$post_id) {
     exit;
 }
 
-// Проверяем, ставил ли пользователь лайк
+// Check if user already liked this post
 $query = "SELECT COUNT(*) FROM likes WHERE user_id = ? AND post_id = ?";
 $stmt = $pdo->prepare($query);
 $stmt->execute([$user_id, $post_id]);
 $likeExists = $stmt->fetchColumn();
 
 if ($likeExists) {
-    // Удаляем лайк
+    // Remove like
     $query = "DELETE FROM likes WHERE user_id = ? AND post_id = ?";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$user_id, $post_id]);
 
-    // Уменьшаем счетчик лайков, но не ниже 0
+    // Decrease likes counter, not below 0
     $query = "UPDATE posts SET likes_count = GREATEST(likes_count - 1, 0) WHERE id = ?";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$post_id]);
 
     echo json_encode(["status" => "unliked"]);
 } else {
-    // Добавляем лайк
+    // Add like
     $query = "INSERT INTO likes (user_id, post_id) VALUES (?, ?)";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$user_id, $post_id]);
 
-    // Увеличиваем счетчик лайков
+    // Increase likes counter
     $query = "UPDATE posts SET likes_count = likes_count + 1 WHERE id = ?";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$post_id]);
 
-    // Если у пользователя был дизлайк, удаляем его
+    // Get post owner ID
+    $stmtPost = $pdo->prepare("SELECT user_id FROM posts WHERE id = ?");
+    $stmtPost->execute([$post_id]);
+    $postData = $stmtPost->fetch(PDO::FETCH_ASSOC);
+
+    // Get username for notification
+    $stmtUser = $pdo->prepare("SELECT username FROM users WHERE id = ?");
+    $stmtUser->execute([$user_id]);
+    $userData = $stmtUser->fetch(PDO::FETCH_ASSOC);
+
+    // Only notify if the liker is not the post owner
+    if ($user_id != $postData['user_id']) {
+        notifyNewLike($postData['user_id'], $user_id, $userData['username']);
+    }
+
+    // If user had disliked, remove dislike
     $query = "DELETE FROM dislikes WHERE user_id = ? AND post_id = ?";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$user_id, $post_id]);
 
-    // Уменьшаем счетчик дизлайков, но не ниже 0
+    // Decrease dislikes counter, not below 0
     $query = "UPDATE posts SET dislikes_count = GREATEST(dislikes_count - 1, 0) WHERE id = ?";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$post_id]);

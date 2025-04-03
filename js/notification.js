@@ -1,7 +1,72 @@
-function showNotification(title, body) {
+let socket;
+let reconnectAttempts = 0;
+const maxReconnectAttempts = 5;
+
+function connectWebSocket() {
+    const userId = document.body.getAttribute('data-user-id');
+    if (!userId) return;
+
+    socket = new WebSocket('ws://localhost:8080');
+
+    socket.onopen = function() {
+        console.log('WebSocket connected');
+        reconnectAttempts = 0;
+
+        // Send authentication message
+        socket.send(JSON.stringify({
+            type: 'connect',
+            userId: userId
+        }));
+    };
+
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'notification') {
+            handleNotification(data);
+        }
+    };
+
+    socket.onclose = function() {
+        console.log('WebSocket connection closed');
+
+        // Attempt to reconnect with exponential backoff
+        if (reconnectAttempts < maxReconnectAttempts) {
+            const timeout = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+            reconnectAttempts++;
+
+            setTimeout(function() {
+                console.log(`Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts})...`);
+                connectWebSocket();
+            }, timeout);
+        }
+    };
+
+    socket.onerror = function(error) {
+        console.error('WebSocket error:', error);
+    };
+}
+
+function handleNotification(data) {
     if (localStorage.getItem("notificationsEnabled") === "false") return;
     if (document.visibilityState === "visible") return;
 
+    switch(data.notificationType) {
+        case 'post':
+            showNotification('New Post', `${data.username} published a new post!`);
+            break;
+        case 'comment':
+            showNotification('New Comment', `${data.username} commented on your post!`);
+            break;
+        case 'like':
+            showNotification('New Like', `${data.username} liked your post!`);
+            break;
+    }
+
+    playSound();
+}
+
+function showNotification(title, body) {
     if (Notification.permission !== "granted") {
         Notification.requestPermission();
     }
@@ -15,56 +80,39 @@ function showNotification(title, body) {
 }
 
 function playSound() {
-    if (localStorage.getItem("notificationsEnabled") === "false") return;
-    if (document.visibilityState === "visible") return;
     var sound = document.getElementById("notifySound");
     if (sound) {
         sound.play();
     }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    let maxPostId = Math.max(...Array.from(document.querySelectorAll(".post")).map(post => parseInt(post.getAttribute("data-post-id")) || 0), 0);
-    localStorage.setItem("lastPostId", localStorage.getItem("lastPostId") || maxPostId);
-    localStorage.setItem("lastCommentId", localStorage.getItem("lastCommentId") || 0);
-    localStorage.setItem("lastLikeId", localStorage.getItem("lastLikeId") || 0);
-
-    function checkNotifications() {
-        let lastPostId = localStorage.getItem("lastPostId");
-        let lastCommentId = localStorage.getItem("lastCommentId");
-        let lastLikeId = localStorage.getItem("lastLikeId");
-
-        let params = new URLSearchParams({
-            lastPostId: lastPostId,
-            lastCommentId: lastCommentId,
-            lastLikeId: lastLikeId
-        });
-
-        fetch("acchandlers/check_notifications.php?" + params.toString())
-            .then(response => response.json())
-            .then(data => {
-                if (data.new_posts > 0) {
-                    showNotification("New post", "Someone published a new post!");
-                    playSound();
-                    localStorage.setItem("lastPostId", data.currentMaxPostId);
-                }
-                if (data.new_comments > 0) {
-                    data.new_comments_data.forEach(comment => {
-                        showNotification("New comment", `${comment.username} commented on a post!`);
-                    });
-                    playSound();
-                    localStorage.setItem("lastCommentId", data.currentMaxCommentId);
-                }
-                if (data.new_likes > 0) {
-                    data.new_likes_data.forEach(like => {
-                        showNotification("New like", `${like.username} liked a post!`);
-                    });
-                    playSound();
-                    localStorage.setItem("lastLikeId", data.currentMaxLikeId);
-                }
-            })
-            .catch(error => console.error("Error checking notifications:", error));
+document.addEventListener("DOMContentLoaded", function() {
+    // Request notification permission when page loads
+    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+        Notification.requestPermission();
     }
 
-    setInterval(checkNotifications, 5000);
+    // Initialize WebSocket connection
+    connectWebSocket();
+
+    // Set up notification toggle button
+    let toggleBtn = document.getElementById("toggleNotifications");
+    if (toggleBtn) {
+        if (localStorage.getItem("notificationsEnabled") === null) {
+            localStorage.setItem("notificationsEnabled", "true");
+        }
+
+        function updateToggleText() {
+            let enabled = localStorage.getItem("notificationsEnabled");
+            toggleBtn.textContent = (enabled === "true") ? "Mute notifications" : "Unmute notifications";
+        }
+
+        updateToggleText();
+
+        toggleBtn.addEventListener("click", function() {
+            let enabled = localStorage.getItem("notificationsEnabled");
+            localStorage.setItem("notificationsEnabled", enabled === "true" ? "false" : "true");
+            updateToggleText();
+        });
+    }
 });

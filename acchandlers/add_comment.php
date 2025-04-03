@@ -1,7 +1,7 @@
 <?php
-global $pdo;
 session_start();
 require_once "../db/database.php";
+require_once "../websocket/notify.php";
 
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(["success" => false, "message" => "You must be logged in."]);
@@ -29,6 +29,14 @@ try {
     $stmtUser = $pdo->prepare("SELECT username, profile_pic FROM users WHERE id = ?");
     $stmtUser->execute([$user_id]);
     $userData = $stmtUser->fetch(PDO::FETCH_ASSOC);
+
+    $stmtPost = $pdo->prepare("SELECT user_id FROM posts WHERE id = ?");
+    $stmtPost->execute([$post_id]);
+    $postData = $stmtPost->fetch(PDO::FETCH_ASSOC);
+
+    if ($user_id != $postData['user_id']) {
+        notifyNewComment($postData['user_id'], $user_id, $userData['username']);
+    }
 
     echo json_encode([
         "success" => true,
