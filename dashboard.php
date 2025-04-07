@@ -1,6 +1,7 @@
 <?php
 require_once "auth/auth_check.php";
 require_once "db/database.php";
+require_once "utils/markdown.php";
 
 // Get user data
 $stmt = $pdo->prepare("SELECT username, profile_pic FROM users WHERE id = ?");
@@ -64,6 +65,9 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/comments.css">
     <link rel="stylesheet" href="styles/undo.css">
+    <link rel="stylesheet" href="styles/advanced-editor.css">
+<!--    <link rel="stylesheet" href="styles/dashboard-theme.css">-->
+<!--    <link rel="stylesheet" href="styles/theme-fixes.css">-->
     <style>
         .container {
             height: auto;
@@ -98,6 +102,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <a href="chat.php" class="btn">Messages</a>
         <a href="posts.php" class="btn">Feed</a>
         <a href="favorites.php" class="btn">Favorites</a>
+<!--        <button id="themeToggle" class="btn">🌙 Dark mode</button>-->
         <button id="logoutConfirmBtn" class="btn">Logout</button>
     </div>
 </div>
@@ -186,7 +191,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <?= htmlspecialchars($originalPost['username'] ?? 'Unknown user') ?>
                                         </a>
                                     </div>
-                                    <p class="original-post-content"><?= htmlspecialchars($originalPost['content'] ?? '') ?></p>
+                                    <p class="original-post-content"><?= parseMarkdown(htmlspecialchars($originalPost['content'] ?? '')) ?></p>
                                     <?php if (!empty($originalPost['image'])): ?>
                                         <img src="<?= htmlspecialchars($originalPost['image']) ?>" class="post-image" alt="Post image">
                                     <?php endif; ?>
@@ -205,7 +210,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
                                 </div>
                             </div>
-                            <p><?= htmlspecialchars($post['content']) ?></p>
+                            <p><?= parseMarkdown(htmlspecialchars($post['content'])) ?></p>
                             <?php if (!empty($post['image'])): ?>
                                 <img src="<?= htmlspecialchars($post['image']) ?>" class="post-image" alt="Post picture">
                             <?php endif; ?>
@@ -241,7 +246,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <img src="<?= htmlspecialchars($comment['profile_pic'] ?: 'upload/default.jpg') ?>" class="comment-avatar" alt="Avatar">
                                     <div class="comment-content">
                                         <strong><?= htmlspecialchars($comment['username']) ?>:</strong>
-                                        <span><?= htmlspecialchars($comment['content']) ?></span>
+                                        <div class="comment-text"><?= parseMarkdown(htmlspecialchars($comment['content'])) ?></div>
                                         <div class="comment-date"><?= $comment['created_at'] ?></div>
                                     </div>
                                     <?php if ($comment['user_id'] == $_SESSION["user_id"]): ?>
@@ -335,142 +340,40 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php unset($_SESSION["update_error"]); ?>
     <?php endif; ?>
 </div>
-<style>
-    .follow-stats {
-        display: flex;
-        gap: 20px;
-        margin-top: 10px;
-        justify-content: center;
-    }
 
-    .stat-item {
-        cursor: pointer;
-        text-align: center;
-    }
-
-    .stat-item:hover {
-        color: #1da1f2;
-    }
-
-    .stat-count {
-        font-weight: bold;
-        font-size: 18px;
-    }
-
-    .user-list {
-        max-height: 300px;
-        overflow-y: auto;
-        margin-top: 15px;
-    }
-
-    .user-list-item {
-        display: flex;
-        align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid #eee;
-    }
-
-    .user-list-item img {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        margin-right: 15px;
-    }
-
-    .user-list-item a {
-        font-weight: bold;
-        text-decoration: none;
-        color: #333;
-    }
-
-    .user-list-item a:hover {
-        color: #1da1f2;
-    }
-
-    .modal-content {
-        width: 400px;
-    }
-</style>
+<div id="externalLinkModal" class="modal">
+    <div class="modal-content">
+        <h3>External Link Warning</h3>
+        <p>You are about to visit external URL:</p>
+        <br>
+        <div class="external-url-display"></div>
+        <br>
+        <p>Do you want to proceed?</p>
+        <div class="modal-buttons">
+            <button id="openExternalLink" class="primary-btn">Continue</button>
+            <button id="cancelExternalLink" class="cancel-btn">Cancel</button>
+        </div>
+    </div>
+</div>
 
 <script>
+    const currentUserId = <?= json_encode($_SESSION['user_id']) ?>;
     setTimeout(() => {
         document.getElementById("loader").classList.add("hidden");
     }, 1500);
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const currentUserId = <?= json_encode($_SESSION['user_id']) ?>;
-
-        // Followers/Following modal functionality
-        const followersBtn = document.getElementById('followers-stat');
-        const followingBtn = document.getElementById('following-stat');
-        const userListModal = document.getElementById('userListModal');
-        const userListTitle = document.getElementById('userListTitle');
-        const userList = document.getElementById('userList');
-        const closeUserListModal = document.getElementById('closeUserListModal');
-
-        followersBtn.addEventListener('click', function() {
-            loadUserList('followers', currentUserId);
-        });
-
-        followingBtn.addEventListener('click', function() {
-            loadUserList('following', currentUserId);
-        });
-
-        closeUserListModal.addEventListener('click', function() {
-            userListModal.style.display = 'none';
-        });
-
-        window.addEventListener('click', function(event) {
-            if (event.target == userListModal) {
-                userListModal.style.display = 'none';
-            }
-        });
-
-        function loadUserList(type, userId) {
-            userListTitle.textContent = type === 'followers' ? 'Followers' : 'Following';
-            userList.innerHTML = '<p>Loading...</p>';
-            userListModal.style.display = 'block';
-
-            fetch(`api/get_users.php?type=${type}&user_id=${userId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        if (data.users.length === 0) {
-                            userList.innerHTML = '<p>No users found</p>';
-                        } else {
-                            userList.innerHTML = '';
-                            data.users.forEach(user => {
-                                const item = document.createElement('div');
-                                item.className = 'user-list-item';
-                                const profilePic = user.profile_pic ? user.profile_pic : 'upload/default.jpg';
-
-                                item.innerHTML = `
-                                <img src="${profilePic}" alt="Profile picture">
-                                <a href="${user.id === currentUserId ? 'dashboard.php' : 'profile/user_profile.php?id=' + user.id}">
-                                    ${user.username}
-                                </a>
-                            `;
-                                userList.appendChild(item);
-                            });
-                        }
-                    } else {
-                        userList.innerHTML = `<p>Error: ${data.message}</p>`;
-                    }
-                })
-                .catch(error => {
-                    userList.innerHTML = `<p>Error: ${error.message}</p>`;
-                });
-        }
-    });
 </script>
 
 <script src="js/profile_page.js"></script>
+<script src="js/modal.js"></script>"
 <script src="js/likes.js"></script>
 <script src="js/dislikes.js"></script>
 <script src="js/favorites.js"></script>
 <script src="js/comment.js"></script>
 <script src="js/share.js"></script>
 <script src="js/delete.js"></script>
+<script src="js/advanced-editor.js"></script>
+<script src="js/external-links.js"></script>
+<!--<script src="js/theme.js"></script>-->
 
 </body>
 </html>

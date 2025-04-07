@@ -27,3 +27,19 @@
     color: #777;
     margin-top: 2px;
 }
+
+.comment-content span {
+    display: inline-block;
+    width: 100%;
+}
+
+.comment-content ul {
+    margin: 5px 0 5px 20px;
+    padding-left: 15px;
+}
+
+.comment-content li {
+    display: list-item;
+    list-style-position: outside;
+    margin-bottom: 3px;
+}

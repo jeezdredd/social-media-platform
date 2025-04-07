@@ -1,4 +1,6 @@
 <?php
+mb_internal_encoding('UTF-8');
+header('Content-Type: text/html; charset=utf-8');
 session_start();
 require_once "../db/database.php";
 require_once "../websocket/notify.php";

@@ -3,6 +3,7 @@ require_once "auth/auth_check.php";
 require_once "db/database.php";
 require_once "db/queries/get_user.php";
 require_once "db/queries/complaints/get_my_complaints.php";
+require_once "utils/markdown.php";
 
 if (!isset($_SESSION["user_id"])) {
     header("Location: login.php");
@@ -62,6 +63,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <link rel="stylesheet" href="img/icon.jpg">
         <link rel="stylesheet" href="styles/undo.css">
         <link rel="stylesheet" href="styles/loader.css">
+        <link rel="stylesheet" href="styles/advanced-editor.css">
     </head>
     <body data-user-id="<?= $_SESSION['user_id'] ?>">
 
@@ -159,8 +161,8 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <div class="repost-container">
                                 <?php
                                 $stmtOriginal = $pdo->prepare("SELECT posts.*, users.username, users.profile_pic FROM posts
-              INNER JOIN users ON posts.user_id = users.id
-              WHERE posts.id = ?");
+                                INNER JOIN users ON posts.user_id = users.id
+                                WHERE posts.id = ?");
                                 $stmtOriginal->execute([$post['original_post_id']]);
                                 $originalPost = $stmtOriginal->fetch(PDO::FETCH_ASSOC);
                                 ?>
@@ -171,7 +173,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <?= htmlspecialchars($originalPost['username'] ?? 'Unknown user') ?>
                                         </a>
                                     </div>
-                                    <p class="original-post-content"><?= htmlspecialchars($originalPost['content'] ?? '') ?></p>
+                                    <p class="original-post-content"><?= parseMarkdown(htmlspecialchars($originalPost['content'] ?? '')) ?></p>
                                     <?php if (!empty($originalPost['image'])): ?>
                                         <img src="<?= htmlspecialchars($originalPost['image']) ?>" class="post-image" alt="Post image">
                                     <?php endif; ?>
@@ -203,7 +205,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <?php endif; ?>
                                 </div>
                             </div>
-                            <p><?= htmlspecialchars($post['content']) ?></p>
+                            <p><?= parseMarkdown(htmlspecialchars($post['content'])) ?></p>
                             <?php if (!empty($post['image'])): ?>
                                 <img src="<?= htmlspecialchars($post['image']) ?>" class="post-image" alt="Post picture">
                             <?php endif; ?>
@@ -243,7 +245,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                          class="comment-avatar" alt="Avatar">
                                     <div class="comment-content">
                                         <strong><?= htmlspecialchars($comment['username']) ?>:</strong>
-                                        <span><?= htmlspecialchars($comment['content']) ?></span>
+                                        <div class="comment-text"><?= parseMarkdown(htmlspecialchars($comment['content'])) ?></div>
                                         <div class="comment-date"><?= $comment['created_at'] ?></div>
                                     </div>
                                     <?php if ($comment['user_id'] == $_SESSION["user_id"]): ?>
@@ -272,6 +274,21 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         ?>
 
+    <div id="externalLinkModal" class="modal">
+        <div class="modal-content">
+            <h3>External Link Warning</h3>
+            <p>You are about to visit external URL:</p>
+            <br>
+            <div class="external-url-display"></div>
+            <br>
+            <p>Do you want to proceed?</p>
+            <div class="modal-buttons">
+                <button id="openExternalLink" class="primary-btn">Continue</button>
+                <button id="cancelExternalLink" class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/likes.js"></script>
     <script src="js/dislikes.js"></script>
     <script src="js/favorites.js"></script>
@@ -281,6 +298,8 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="js/mobile_menu.js"></script>
     <script src="js/share.js"></script>
     <script src="js/create_complaint.js"></script>
+    <script src="js/advanced-editor.js"></script>
+    <script src="js/external-links.js"></script>
 
     <script>
         setTimeout(() => {

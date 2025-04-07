@@ -1,0 +1,88 @@
+.editor-toolbar {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 5px;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+}
+
+.toolbar-btn {
+    background: transparent;
+    color: #333;
+    border: none;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.toolbar-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.bold-btn {
+    font-weight: bold;
+    color: #000;
+}
+
+.list-btn {
+    font-size: 20px;
+    color: #000;
+}
+
+.link-btn {
+    color: #0066cc;
+}
+
+.emoji-picker {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    width: 220px;
+    display: none;
+    flex-wrap: wrap;
+}
+
+.emoji-picker .emoji {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 35px;
+    height: 35px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.emoji-picker .emoji:hover {
+    transform: scale(1.2);
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 5px;
+}
+
+.post-input textarea,
+.comment-form input[type="text"]:focus {
+    width: 100%;
+    transition: height 0.2s;
+    height: 60px;
+}
+
+.post-input textarea:focus {
+    height: 100px;
+}
+
+.comment-form .editor-toolbar .toolbar-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+}
