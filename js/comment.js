@@ -17,17 +17,22 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (parseInt(data.comment.user_id) === parseInt(currentUserId)) {
                             deleteButtonHTML = `<button class="delete-comment-btn" data-comment-id="${data.comment.id}">Delete</button>`;
                         }
+
+                        const parsedContent = parseMarkdownClient(data.comment.content);
+
                         let commentBlock = document.createElement("div");
                         commentBlock.className = "comment";
+                        commentBlock.setAttribute('data-comment-id', data.comment.id);
                         commentBlock.innerHTML = `
-                        <img src="${data.comment.profile_pic}" class="comment-avatar" alt="Avatar">
-                        <div class="comment-content">
-                            <strong>${data.comment.username}:</strong>
-                            <span>${data.comment.content}</span>
-                            <div class="comment-date">${data.comment.created_at}</div>
-                        </div>
-                        ${deleteButtonHTML}
-                    `;
+                            <img src="${data.comment.profile_pic}" class="comment-avatar" alt="Avatar">
+                            <div class="comment-content">
+                                <strong>${data.comment.username}:</strong>
+                                <div class="comment-text">${parsedContent}</div>
+                                <div class="comment-date">${data.comment.created_at}</div>
+                            </div>
+                            ${deleteButtonHTML}
+                        `;
+
                         let commentsContainer = document.getElementById("comments-" + postId);
                         commentsContainer.appendChild(commentBlock);
                         this.reset();
@@ -35,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         let newDeleteBtn = commentBlock.querySelector(".delete-comment-btn");
                         if (newDeleteBtn) {
                             newDeleteBtn.addEventListener("click", function () {
-                                if (!confirm("Вы уверены, что хотите удалить этот комментарий?")) return;
+                                if (!confirm("Are you sure you want to delete this comment?")) return;
 
                                 let commentId = this.getAttribute("data-comment-id");
                                 commentBlock.style.opacity = "0.5";

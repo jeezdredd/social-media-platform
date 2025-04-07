@@ -192,3 +192,20 @@ function insertLink(element) {
         }
     }
 }
+
+function parseMarkdownClient(text) {
+    if (!text) return '';
+
+    // Bold: **text** to <strong>text</strong>
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // Links: [text](url) to <a>
+    text = text.replace(/\[(.*?)\]\((https?:\/\/[^\s\)]+)\)/g,
+        '<a href="javascript:void(0)" class="external-link" data-url="$2">$1</a>');
+
+    // Lists: • item to <li>
+    text = text.replace(/^• (.*?)$/gm, '<li>$1</li>');
+    text = text.replace(/((?:<li>.*?<\/li>\s*)+)/, '<ul>$1</ul>');
+
+    return text;
+}

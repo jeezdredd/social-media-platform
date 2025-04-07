@@ -462,6 +462,33 @@ button.more {
     line-height: 1.4;
 }
 
+/* Pinned posts */
+.pin-post-btn {
+    background-color: transparent;
+    border: none;
+    color: #657786;
+    cursor: pointer;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+.pin-post-btn:hover {
+    color: #1da1f2;
+}
+
+.pin-post-btn.pinned {
+    color: #1da1f2;
+}
+
+.post[data-is-pinned="1"]::before {
+    content: "📌 Pinned Post";
+    display: block;
+    padding: 5px 0;
+    color: #1da1f2;
+    font-weight: bold;
+    font-size: 14px;
+}
+
 /* Container for the reposted content */
 .repost-container {
     border: 1px solid #cfd9de;

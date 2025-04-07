@@ -45,7 +45,7 @@ $sql = "SELECT posts.*, users.username, users.profile_pic
         FROM posts 
         INNER JOIN users ON posts.user_id = users.id 
         WHERE posts.user_id = :user_id
-        ORDER BY posts.created_at DESC";
+        ORDER BY posts.is_pinned DESC, posts.created_at DESC";
 
 $stmt = $pdo->prepare($sql);
 $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
@@ -154,7 +154,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <p>You haven't posted anything yet.</p>
             <?php else: ?>
                 <?php foreach ($posts as $post): ?>
-                    <div class="post" data-post-id="<?= $post['id'] ?>">
+                    <div class="post" data-post-id="<?= $post['id'] ?>" data-is-pinned="<?= $post['is_pinned'] ?>">
                         <?php if (isset($post['is_share']) && $post['is_share'] == 1 && isset($post['original_post_id'])): ?>
                             <!-- Regular post header showing who shared -->
                             <div class="post-header">
@@ -166,6 +166,9 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     </a>
                                 </div>
                                 <div class="post-header__right">
+                                    <button class="pin-post-btn <?= $post['is_pinned'] ? 'pinned' : '' ?>" data-post-id="<?= $post['id'] ?>">
+                                        <?= $post['is_pinned'] ? '📌 Unpin' : '📌 Pin' ?>
+                                    </button>
                                     <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
                                 </div>
                             </div>
@@ -207,6 +210,9 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <a href="profile/user_profile.php?id=<?= $post['user_id'] ?>" class="username-link"><?= htmlspecialchars($post['username']) ?></a>
                                 </div>
                                 <div class="post-header__right">
+                                    <button class="pin-post-btn <?= $post['is_pinned'] ? 'pinned' : '' ?>" data-post-id="<?= $post['id'] ?>">
+                                        <?= $post['is_pinned'] ? '📌 Unpin' : '📌 Pin' ?>
+                                    </button>
                                     <button class="delete-post-btn" data-post-id="<?= $post['id'] ?>">Delete post</button>
                                 </div>
                             </div>
@@ -364,7 +370,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </script>
 
 <script src="js/profile_page.js"></script>
-<script src="js/modal.js"></script>"
+<script src="js/modal.js"></script>
 <script src="js/likes.js"></script>
 <script src="js/dislikes.js"></script>
 <script src="js/favorites.js"></script>
@@ -373,6 +379,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script src="js/delete.js"></script>
 <script src="js/advanced-editor.js"></script>
 <script src="js/external-links.js"></script>
+<script src="js/pin.js"></script>
 <!--<script src="js/theme.js"></script>-->
 
 </body>
