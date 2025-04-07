@@ -150,7 +150,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <form method="GET" action="posts.php" id="searchForm" class="search-form collapsed">
                     <input type="text" name="search" id="searchInput" placeholder="Search posts or users..."
                            value="<?= htmlspecialchars($search ?? '') ?>">
-                    <button type="submit" id="searchButton">Search</button>
                 </form>
             </div>
 

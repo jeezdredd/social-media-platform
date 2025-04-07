@@ -17,14 +17,21 @@ document.addEventListener('DOMContentLoaded', function() {
             searchForm.classList.add('expanded');
             setTimeout(() => searchInput.focus(), 300);
         } else {
-            // If input is empty, collapse
-            if (searchInput.value.trim() === '') {
+            // If input has text, submit the form
+            if (searchInput.value.trim() !== '') {
+                searchForm.submit();
+            } else {
+                // If input is empty, collapse
                 searchForm.classList.remove('expanded');
                 searchForm.classList.add('collapsed');
-            } else {
-                // If input has text, submit the form
-                searchForm.submit();
             }
+        }
+    });
+
+    // Submit form when pressing Enter key
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && searchInput.value.trim() !== '') {
+            searchForm.submit();
         }
     });
 

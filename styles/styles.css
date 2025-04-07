@@ -467,8 +467,9 @@ button.more {
     position: relative;
     display: flex;
     align-items: center;
-    margin-top: 5px;
+    margin: 5px 0 15px 0;
     width: 100%;
+    height: 40px;
 }
 
 .search-icon {
@@ -482,9 +483,14 @@ button.more {
     cursor: pointer;
     z-index: 3;
     position: absolute;
-    transition: transform 0.3s ease, background-color 0.2s;
+    left: 0;
+    transition: background-color 0.2s;
     border: 1px solid #cfd9de;
     color: #536471;
+}
+
+.search-icon:hover {
+    background-color: #e6e9ec;
 }
 
 .search-form {
@@ -494,10 +500,11 @@ button.more {
     border-radius: 20px;
     border: 1px solid #cfd9de;
     background-color: #fff;
-    transition: width 0.3s ease, padding 0.3s ease;
-    overflow: hidden;
+    transition: all 0.3s ease;
     width: 40px;
-    position: relative;
+    position: absolute;
+    left: 0;
+    overflow: hidden;
 }
 
 .search-form.collapsed {
@@ -508,7 +515,7 @@ button.more {
 
 .search-form.expanded {
     width: 100%;
-    padding-left: 50px;
+    padding-left: 45px;
 }
 
 .search-container input[type="text"] {
@@ -520,33 +527,21 @@ button.more {
     background: transparent;
     opacity: 0;
     transition: opacity 0.3s ease;
-    width: 100%;
+    width: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
 .search-form.expanded input[type="text"] {
     opacity: 1;
-    padding: 8px 16px 8px 0;
+    width: 100%;
+    padding: 0 15px 0 0;
+    line-height: 40px;
+    height: 40px;
 }
 
 .search-container button {
-    padding: 8px 15px;
-    background-color: #1da1f2;
-    color: white;
-    border: none;
-    height: 100%;
-    border-radius: 0 20px 20px 0;
-    cursor: pointer;
-    font-weight: bold;
-    opacity: 0;
-    width: 0;
-    overflow: hidden;
-    transition: opacity 0.2s ease, width 0.3s ease;
-}
-
-.search-form.expanded button {
-    opacity: 1;
-    width: 80px;
+    display: none;
 }
 
 .no-results {
