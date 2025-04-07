@@ -140,11 +140,17 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             <?php endif; ?>
 
-            <div class="search-container">
-                <form method="GET" action="posts.php">
-                    <input type="text" name="search" placeholder="Search posts or users..."
+            <div class="search-container" id="searchContainer">
+                <div class="search-icon" id="searchIcon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </div>
+                <form method="GET" action="posts.php" id="searchForm" class="search-form collapsed">
+                    <input type="text" name="search" id="searchInput" placeholder="Search posts or users..."
                            value="<?= htmlspecialchars($search ?? '') ?>">
-                    <button type="submit">Search</button>
+                    <button type="submit" id="searchButton">Search</button>
                 </form>
             </div>
 
@@ -368,6 +374,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="js/share.js"></script>
     <script src="js/create_complaint.js"></script>
     <script src="js/advanced-editor.js"></script>
+    <script src="js/search.js"></script>
     <script src="js/external-links.js"></script>
 
     <script>

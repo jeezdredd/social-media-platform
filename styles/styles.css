@@ -464,67 +464,89 @@ button.more {
 
 /* Search function */
 .search-container {
+    position: relative;
     display: flex;
     align-items: center;
     margin-top: 5px;
+    width: 100%;
 }
 
-.search-container form {
+.search-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #f0f2f5;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 3;
+    position: absolute;
+    transition: transform 0.3s ease, background-color 0.2s;
+    border: 1px solid #cfd9de;
+    color: #536471;
+}
+
+.search-form {
     display: flex;
     align-items: center;
     height: 40px;
     border-radius: 20px;
     border: 1px solid #cfd9de;
     background-color: #fff;
-    transition: box-shadow 0.5s, border-color 0.5s;
+    transition: width 0.3s ease, padding 0.3s ease;
+    overflow: hidden;
+    width: 40px;
+    position: relative;
 }
 
-.search-container form:focus-within {
-    border-color: #1d9bf0;
-    box-shadow: 0 0 0 2px rgba(29, 155, 240, 0.2);
+.search-form.collapsed {
+    width: 40px;
+    background-color: transparent;
+    border-color: transparent;
+}
+
+.search-form.expanded {
+    width: 100%;
+    padding-left: 50px;
 }
 
 .search-container input[type="text"] {
     flex-grow: 1;
-    padding: 8px 16px;
     border: none;
     height: 100%;
     outline: none;
     font-size: 15px;
     background: transparent;
-    border-radius: 20px 0 0 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    width: 100%;
+    padding: 0;
+}
+
+.search-form.expanded input[type="text"] {
+    opacity: 1;
+    padding: 8px 16px 8px 0;
 }
 
 .search-container button {
-    padding: 15px 25px;
+    padding: 8px 15px;
     background-color: #1da1f2;
     color: white;
     border: none;
     height: 100%;
-    border-radius: 20px;
+    border-radius: 0 20px 20px 0;
     cursor: pointer;
-    margin-left: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 80px;
-    text-align: center;
-    line-height: 1;
-    visibility: visible;
     font-weight: bold;
-    overflow: visible
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    transition: opacity 0.2s ease, width 0.3s ease;
 }
 
-.search-container button:hover {
-    background-color: #0c7abf;
-}
-
-.search-results-container {
-    margin-bottom: 10px;
-}
-
-.search-container {
-    margin-top: 5px;
+.search-form.expanded button {
+    opacity: 1;
+    width: 80px;
 }
 
 .no-results {
