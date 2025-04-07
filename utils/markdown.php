@@ -13,4 +13,12 @@ function parseMarkdown($text) {
 
     return $text;
 }
-?>
+
+function highlightSearchTerm($text, $search) {
+    if (empty($search)) {
+        return $text;
+    }
+
+    $pattern = '/' . preg_quote($search, '/') . '/i';
+    return preg_replace($pattern, '<span class="search-highlight">$0</span>', $text);
+}

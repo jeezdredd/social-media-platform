@@ -39,14 +39,54 @@ $stmt = $pdo->prepare("SELECT post_id FROM favorites WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $favorites = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-$sql = "SELECT posts.*, users.username, users.profile_pic 
-        FROM posts 
-        INNER JOIN users ON posts.user_id = users.id 
-        ORDER BY posts.created_at DESC 
-        LIMIT :limit OFFSET 0";
+// Get search parameter
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-$stmt = $pdo->prepare($sql);
-$stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+if (!empty($search)) {
+    $searchTerm = "%{$search}%";
+    $sql = "SELECT posts.*, users.username, users.profile_pic,
+            (SELECT COUNT(*) FROM likes WHERE post_id = posts.id) as likes_count,
+            (SELECT COUNT(*) FROM dislikes WHERE post_id = posts.id) as dislikes_count
+            FROM posts
+            INNER JOIN users ON posts.user_id = users.id
+            WHERE posts.content LIKE :search
+            OR users.username LIKE :search
+            OR (posts.is_share = 1 AND EXISTS (
+                SELECT 1 FROM posts original 
+                WHERE original.id = posts.original_post_id 
+                AND original.content LIKE :search
+            ))
+            ORDER BY
+                CASE
+                    WHEN posts.content = :exact_match THEN 1
+                    WHEN users.username = :exact_match THEN 2
+                    WHEN posts.content LIKE :start_match THEN 3
+                    WHEN users.username LIKE :start_match THEN 4
+                    ELSE 5
+                END,
+                posts.created_at DESC
+            LIMIT :limit";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(':search', $searchTerm, PDO::PARAM_STR);
+    $stmt->bindValue(':exact_match', $search, PDO::PARAM_STR);
+    $stmt->bindValue(':start_match', $search . '%', PDO::PARAM_STR);
+    $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+    $stmt->execute();
+} else {
+    // Regular feed query
+    $sql = "SELECT posts.*, users.username, users.profile_pic,
+            (SELECT COUNT(*) FROM likes WHERE post_id = posts.id) as likes_count,
+            (SELECT COUNT(*) FROM dislikes WHERE post_id = posts.id) as dislikes_count
+            FROM posts
+            INNER JOIN users ON posts.user_id = users.id
+            ORDER BY posts.created_at DESC
+            LIMIT :limit";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+}
+
 $stmt->execute();
 
 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -82,7 +122,32 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="nav-left">
             <h2>Feed</h2>
         </div>
+
         <div class="nav-right">
+            <?php if (!empty($search)): ?>
+                <div class="search-results-container">
+                    <?php if (count($posts) === 0): ?>
+                        <div class="no-results">
+                            <p>No posts found matching "<?= htmlspecialchars($search) ?>". Try different keywords or check your spelling.</p>
+                            <a href="posts.php" class="clear-search">Clear search</a>
+                        </div>
+                    <?php else: ?>
+                        <div class="search-results-info">
+                            <p>Showing results for: <strong><?= htmlspecialchars($search) ?></strong></p>
+                            <a href="posts.php" class="clear-search">Clear search</a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="search-container">
+                <form method="GET" action="posts.php">
+                    <input type="text" name="search" placeholder="Search posts or users..."
+                           value="<?= htmlspecialchars($search ?? '') ?>">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+
             <a href="dashboard.php" class="btn">Profile</a>
             <a href="chat.php" class="btn">Messages</a>
             <a href="favorites.php" class="btn">Favorites</a>
@@ -205,7 +270,11 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <?php endif; ?>
                                 </div>
                             </div>
-                            <p><?= parseMarkdown(htmlspecialchars($post['content'])) ?></p>
+                            <?php if (!empty($search)): ?>
+                                <p><?= parseMarkdown(highlightSearchTerm(htmlspecialchars($post['content']), $search)) ?></p>
+                            <?php else: ?>
+                                <p><?= parseMarkdown(htmlspecialchars($post['content'])) ?></p>
+                            <?php endif; ?>
                             <?php if (!empty($post['image'])): ?>
                                 <img src="<?= htmlspecialchars($post['image']) ?>" class="post-image" alt="Post picture">
                             <?php endif; ?>
@@ -268,11 +337,11 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         </div>
 
-        <?php
-        if ($totalPosts >= $limit) {
-            echo '<button class="more" data-limit="' . $limit . '">Load more</button>';
-        }
-        ?>
+    <?php
+    if ($totalPosts >= $limit && !(count($posts) === 0 && !empty($search))) {
+        echo '<button class="more" data-limit="' . $limit . '">Load more</button>';
+    }
+    ?>
 
     <div id="externalLinkModal" class="modal">
         <div class="modal-content">

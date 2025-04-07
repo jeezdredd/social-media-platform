@@ -41,6 +41,8 @@ $stmt = $pdo->prepare("SELECT COUNT(*) FROM followers WHERE follower_id = ?");
 $stmt->execute([$_SESSION["user_id"]]);
 $followingCount = $stmt->fetchColumn();
 
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
 $sql = "SELECT posts.*, users.username, users.profile_pic 
         FROM posts 
         INNER JOIN users ON posts.user_id = users.id 
@@ -85,13 +87,13 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body class="profile-page">
 
-<!--<div class="loader-container" id="loader">-->
-<!--    <div class="loader">-->
-<!--        <div></div>-->
-<!--        <div></div>-->
-<!--        <div></div>-->
-<!--    </div>-->
-<!--</div>-->
+<div class="loader-container" id="loader">
+    <div class="loader">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+</div>
 
 <!-- Top navbar -->
 <div class="navbar">
