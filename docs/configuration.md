@@ -1,8 +1,3 @@
-Let's continue creating the documentation files for your social media application. I'll create the content for several key documentation files:
-
-### 1. For `docs/configuration.md`:
-
-```markdown
 # Configuration Guide
 
 This guide covers the configuration options for the Social Media Web Application.
