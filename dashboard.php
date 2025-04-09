@@ -68,8 +68,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="styles/comments.css">
     <link rel="stylesheet" href="styles/undo.css">
     <link rel="stylesheet" href="styles/advanced-editor.css">
-<!--    <link rel="stylesheet" href="styles/dashboard-theme.css">-->
-<!--    <link rel="stylesheet" href="styles/theme-fixes.css">-->
+
     <style>
         .container {
             height: auto;
@@ -104,7 +103,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <a href="chat.php" class="btn">Messages</a>
         <a href="posts.php" class="btn">Feed</a>
         <a href="favorites.php" class="btn">Favorites</a>
-<!--        <button id="themeToggle" class="btn">🌙 Dark mode</button>-->
         <button id="logoutConfirmBtn" class="btn">Logout</button>
     </div>
 </div>
@@ -382,7 +380,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script src="js/advanced-editor.js"></script>
 <script src="js/external-links.js"></script>
 <script src="js/pin.js"></script>
-<!--<script src="js/theme.js"></script>-->
 
 </body>
 </html>

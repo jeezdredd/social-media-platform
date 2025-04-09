@@ -75,34 +75,34 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch(`chat_handlers/load_messages.php?receiver_id=${selectedUserId}`)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`Server responded with ${response.status}`);
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(text => {
+                if (!text.trim()) {
+                    throw new Error('Server returned empty response');
                 }
 
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Server did not return JSON');
+                try {
+                    return JSON.parse(text);
+                } catch (error) {
+                    throw new Error('Server returned invalid JSON');
                 }
-
-                return response.json();
             })
             .then(messages => {
                 if (messages.error) {
                     throw new Error(messages.error);
                 }
 
-                // Check if we have new messages
                 const hasNewMessages = messagesHaveChanged(messages);
-
                 if (hasNewMessages) {
                     updateMessageDisplay(messages);
                     messageCache = [...messages];
-
-                    // Scroll to bottom only if new messages
                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 }
             })
             .catch(error => {
-                console.error("Error fetching chat:", error);
                 messagesDiv.innerHTML = `<div class="error-message"><i class="error-icon">⚠️</i> Error loading messages: ${error.message}</div>`;
             });
     }
