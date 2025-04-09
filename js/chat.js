@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const messagesDiv = document.getElementById("messages");
     const messageInput = document.getElementById("message-input");
     const chatForm = document.getElementById("chat-form");
+    let socket = null;
     let selectedUserId = null;
     let selectedUserName = "";
     let messageCache = [];
@@ -49,6 +50,60 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         sendMessage();
     });
+
+    function initWebSocket() {
+        const socketProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const socketUrl = `${socketProtocol}//${window.location.hostname}:8080`;
+
+        socket = new WebSocket(socketUrl);
+
+        socket.onopen = () => {
+            console.log("WebSocket connected");
+            // Send user ID when connected
+            socket.send(JSON.stringify({
+                type: "connect",
+                userId: userId
+            }));
+        };
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.type === "message" && data.senderId == selectedUserId) {
+                // New message from currently selected user
+                fetchMessages();
+
+                // Send read receipt
+                socket.send(JSON.stringify({
+                    type: "message_read",
+                    senderId: data.senderId,
+                    receiverId: userId
+                }));
+            }
+            else if (data.type === "message_delivered" && data.receiverId == selectedUserId) {
+                // Update message status to delivered (but not read)
+                document.querySelectorAll('.message.sent .status-sent').forEach(el => {
+                    el.classList.remove('status-sent');
+                    el.classList.add('status-delivered');
+                });
+            }
+            else if (data.type === "message_read" && data.senderId == selectedUserId) {
+                // Update all delivered messages to read status
+                document.querySelectorAll('.message.sent .status-delivered').forEach(el => {
+                    el.classList.remove('status-delivered');
+                    el.classList.add('status-read');
+                });
+            }
+        };
+
+        socket.onclose = () => {
+            console.log("WebSocket disconnected");
+            // Try to reconnect after 3 seconds
+            setTimeout(initWebSocket, 3000);
+        };
+    }
+
+    initWebSocket();
 
     // Message input handling
     messageInput.addEventListener("input", () => {
@@ -100,11 +155,58 @@ document.addEventListener("DOMContentLoaded", () => {
                     updateMessageDisplay(messages);
                     messageCache = [...messages];
                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                    markMessagesAsRead(selectedUserId);
                 }
             })
             .catch(error => {
                 messagesDiv.innerHTML = `<div class="error-message"><i class="error-icon">⚠️</i> Error loading messages: ${error.message}</div>`;
             });
+    }
+
+    function updateUserList() {
+        fetch("chat_handlers/get_users.php")
+            .then(response => response.json())
+            .then(users => {
+                // Iterate through users and update unread badges
+                users.forEach(user => {
+                    const userItem = document.querySelector(`.user-item[data-user-id="${user.id}"]`);
+                    if (userItem) {
+                        // Find or create the unread badge
+                        let badge = userItem.querySelector('.unread-badge');
+
+                        if (user.unread_count > 0) {
+                            if (!badge) {
+                                badge = document.createElement('span');
+                                badge.className = 'unread-badge';
+                                userItem.querySelector('.user-header').appendChild(badge);
+                            }
+                            badge.textContent = user.unread_count;
+                        } else if (badge) {
+                            badge.remove();
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error("Error updating user list:", error));
+    }
+
+    function markMessagesAsRead(senderId) {
+        // Only mark as read if we're looking at this conversation
+        if (!senderId) return;
+
+        fetch("chat_handlers/mark_read.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `sender_id=${senderId}`
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.count > 0) {
+                    updateUserList();
+                }
+            })
+            .catch(error => console.error("Error marking messages as read:", error));
     }
 
     function messagesHaveChanged(newMessages) {
@@ -151,6 +253,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     minute: '2-digit'
                 });
 
+                // Status indicator (only for sent messages)
+                let statusIndicator = '';
+                if (isCurrentUser) {
+                    statusIndicator = `<span class="message-status ${msg.is_read ? 'status-read' : 'status-delivered'}"></span>`;
+                }
+
                 // Start new group if sender changes
                 if (currentSender !== msg.sender_id) {
                     if (currentSender !== null) {
@@ -162,11 +270,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // Add message to group
                 messageGroup += `
-                    <div class="message ${messageClass} ${!isSameSender ? 'last-in-group' : ''}">
-                        ${msg.content}
-                        <small class="message-time">${messageTime}</small>
-                    </div>
-                `;
+                <div class="message ${messageClass} ${!isSameSender ? 'last-in-group' : ''}">
+                    ${msg.content}
+                    <small class="message-time">${messageTime}${statusIndicator}</small>
+                </div>
+            `;
 
                 // End of messages or sender changes
                 if (!isSameSender || index === groupedMessages[date].length - 1) {
@@ -217,44 +325,62 @@ document.addEventListener("DOMContentLoaded", () => {
         let lastGroup = messagesDiv.querySelector('.sent-group:last-child');
         if (lastGroup) {
             lastGroup.insertAdjacentHTML('beforeend', `
-                <div class="message sent">
-                    ${messageText}
-                    <small class="message-time">${timeString}</small>
-                </div>
-            `);
+            <div class="message sent">
+                ${messageText}
+                <small class="message-time">${timeString}<span class="message-status status-sent"></span></small>
+            </div>
+        `);
         } else {
             messagesDiv.insertAdjacentHTML('beforeend', `
-                <div class="message-group sent-group">
-                    <div class="message sent last-in-group">
-                        ${messageText}
-                        <small class="message-time">${timeString}</small>
-                    </div>
+            <div class="message-group sent-group">
+                <div class="message sent last-in-group">
+                    ${messageText}
+                    <small class="message-time">${timeString}<span class="message-status status-sent"></span></small>
                 </div>
-            `);
+            </div>
+        `);
         }
 
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
+        // Send message to server
         fetch("chat_handlers/send_message.php", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: `receiver_id=${selectedUserId}&message=${encodeURIComponent(messageText)}`
         })
-            .then(response => {
-                if (!response.ok) throw new Error("Network response error");
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    // Update messages to get the saved message with proper timestamp
-                    fetchMessages();
-                } else if (data.error) {
+                if (data.error) {
                     throw new Error(data.error);
                 }
+
+                // Update to delivered status after successful send
+                const sentMsgStatus = messagesDiv.querySelector('.message:last-child .status-sent');
+                if (sentMsgStatus) {
+                    sentMsgStatus.classList.remove('status-sent');
+                    sentMsgStatus.classList.add('status-delivered');
+                }
+
+                // Send via WebSocket if connected
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({
+                        type: "message",
+                        senderId: userId,
+                        receiverId: selectedUserId,
+                        text: messageText
+                    }));
+                }
+
+                fetchMessages(); // Refresh messages
             })
             .catch(error => {
                 console.error("Error sending message:", error);
-                messageInput.value = messageText; // Return the text if send failed
+                messagesDiv.insertAdjacentHTML('beforeend', `
+            <div class="error-message">
+                <span class="error-icon">⚠️</span> Failed to send message. Please try again.
+            </div>
+        `);
             });
     }
 
@@ -266,9 +392,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (selectedUserId) {
             fetchMessages();
 
-            // If no new messages, gradually increase polling interval
             if (messageCache.length > 0) {
-                pollingInterval = 2000; // Reset to 2 seconds if active chat
+                pollingInterval = 2000;
             } else {
                 pollingInterval = Math.min(pollingInterval * 1.5, maxPollingInterval);
             }

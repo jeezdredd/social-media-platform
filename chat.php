@@ -10,8 +10,17 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-$stmt = $pdo->prepare("SELECT id, username, status, profile_pic, last_seen FROM users WHERE id != ? ORDER BY status DESC, username ASC");
-$stmt->execute([$user_id]);
+$stmt = $pdo->prepare("
+    SELECT u.id, u.username, u.status, u.profile_pic, u.last_seen,
+           (SELECT COUNT(*) FROM messages 
+            WHERE sender_id = u.id 
+            AND receiver_id = ? 
+            AND is_read = FALSE) as unread_count
+    FROM users u 
+    WHERE u.id != ? 
+    ORDER BY u.status DESC, unread_count DESC, u.username ASC
+");
+$stmt->execute([$user_id, $user_id]);
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -67,6 +76,9 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="user-header">
                     <img src="<?= $avatarPath ?>" alt="avatar" class="user-avatar">
                     <span class="user-name"><?= htmlspecialchars($user['username']) ?></span>
+                    <?php if ($user['unread_count'] > 0): ?>
+                        <span class="unread-badge"><?= $user['unread_count'] ?></span>
+                    <?php endif; ?>
                 </div>
                 <span class="status <?= $user['status'] ?>">
                     <?= $user['status'] === 'online' ? '🟢 Online now' : '⚪ Offline' ?>

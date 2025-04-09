@@ -18,7 +18,8 @@ try {
 
     $receiver_id = $_GET['receiver_id'];
 
-    $stmt = $pdo->prepare("SELECT sender_id, receiver_id, content, created_at FROM messages
+    $stmt = $pdo->prepare("SELECT sender_id, receiver_id, content, created_at, is_read 
+                       FROM messages
                        WHERE (sender_id = :user_id AND receiver_id = :receiver_id)
                           OR (sender_id = :receiver_id AND receiver_id = :user_id)
                        ORDER BY created_at ASC");

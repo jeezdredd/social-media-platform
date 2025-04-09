@@ -57,8 +57,40 @@ wss.on("connection", (ws, req) => {
                         type: "message",
                         senderId,
                         text,
-                        timestamp
+                        timestamp,
+                        unread: true
                     }));
+
+                    // Send delivery confirmation back to sender
+                    if (clients[senderId]) {
+                        clients[senderId].send(JSON.stringify({
+                            type: "message_delivered",
+                            receiverId
+                        }));
+                    }
+                }
+                else if (data.type === "message_read") {
+                    const { senderId, receiverId } = data;
+
+                    // Update database to mark messages as read
+                    try {
+                        const conn = await pool.getConnection();
+                        await conn.query(
+                            "UPDATE messages SET is_read = TRUE WHERE sender_id = ? AND receiver_id = ? AND is_read = FALSE",
+                            [senderId, receiverId]
+                        );
+                        conn.release();
+
+                        if (clients[senderId]) {
+                            clients[senderId].send(JSON.stringify({
+                                type: "message_read",
+                                senderId: receiverId, // This is who read the message
+                                receiverId: senderId  // This is who sent the original message
+                            }));
+                        }
+                    } catch (err) {
+                        console.error("Error marking messages as read:", err);
+                    }
                 }
             } catch (err) {
                 console.error("Error handling message:", err);

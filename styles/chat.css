@@ -79,7 +79,7 @@ body {
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid white;
+    border: 2px solid #007bff;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -101,6 +101,7 @@ body {
 .online {
     background: #e7f7e7;
     color: #28a745;
+    box-shadow: 0 0 8px rgba(40, 167, 69, 0.5);
 }
 
 .offline {
@@ -183,7 +184,7 @@ body {
     position: relative;
     max-width: 100%;
     word-wrap: break-word;
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeInUp 0.3s ease-out;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     line-height: 1.4;
 }
@@ -192,6 +193,14 @@ body {
     background: linear-gradient(135deg, #0084ff, #007bff);
     color: white;
     border-top-right-radius: 4px;
+    position: relative;
+}
+
+.message.sent .message-time {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
 }
 
 .message.received {
@@ -218,14 +227,15 @@ body {
     justify-content: center;
     margin: 15px 0;
     font-size: 12px;
-    color: #888;
+    color: #555;
+    font-weight: bold;
 }
 
 .date-separator::before,
 .date-separator::after {
     content: "";
     flex-grow: 1;
-    background: rgba(0,0,0,0.1);
+    background: rgba(0, 0, 0, 0.1);
     height: 1px;
     margin: 0 10px;
 }
@@ -259,6 +269,12 @@ body {
 #message-input:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+#message-input::placeholder {
+    color: #aaa;
+    font-style: italic;
+    font-size: 14px;
 }
 
 #message-input:disabled + #send-button {
@@ -324,13 +340,13 @@ body {
 }
 
 .spinner {
-    width: 30px;
-    height: 30px;
-    border: 3px solid rgba(0, 123, 255, 0.2);
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 123, 255, 0.2);
     border-top-color: #007bff;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin-bottom: 15px;
+    margin: auto;
 }
 
 .error-message {
@@ -352,8 +368,21 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     color: #888;
     padding: 40px 0;
+    text-align: center;
+}
+
+.no-messages i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.no-messages p {
+    font-size: 16px;
+    color: #555;
 }
 
 .message-icon {
@@ -376,6 +405,17 @@ body {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Navigation link */
@@ -428,4 +468,85 @@ body {
         max-width: 90%;
         animation: fadeIn 0.3s ease-out;
     }
+}
+
+.scroll-to-bottom {
+    position: fixed;
+    bottom: 80px;
+    right: 30px;
+    width: 40px;
+    height: 40px;
+    background: #007bff;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.scroll-to-bottom.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.scroll-to-bottom:hover {
+    background: #0056b3;
+}
+
+/* Read state */
+.message-status {
+    display: inline-block;
+    font-size: 10px;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.unread-badge {
+    background: #ff3b30;
+    color: white;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: auto;
+    padding: 0 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+
+.status-delivered {
+    color: #8e8e8e;
+}
+
+.status-read {
+    color: #37ff00;
+}
+
+.status-delivered::after {
+    content: "✓✓";
+    font-size: 11px;
+    letter-spacing: -1px;
+}
+
+.status-read::after {
+    content: "✓✓";
+    font-size: 11px;
+}
+
+.status-sent {
+    color: #8e8e8e;
+}
+
+.status-sent::after {
+    content: "✓";
+    font-size: 11px;
 }
