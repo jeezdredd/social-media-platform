@@ -262,7 +262,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Start new group if sender changes
                 if (currentSender !== msg.sender_id) {
                     if (currentSender !== null) {
-                        html += `<div class="message-group ${currentSender == userId ? 'sent-group' : 'received-group'}">${messageGroup}</div>`;
+                        // Add the correct class based on who sent the message
+                        const groupClass = currentSender == userId ? 'sent-group' : 'received-group';
+                        html += `<div class="message-group ${groupClass}">${messageGroup}</div>`;
                         messageGroup = '';
                     }
                     currentSender = msg.sender_id;
@@ -278,7 +280,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // End of messages or sender changes
                 if (!isSameSender || index === groupedMessages[date].length - 1) {
-                    html += `<div class="message-group ${currentSender == userId ? 'sent-group' : 'received-group'}">${messageGroup}</div>`;
+                    // Add the correct class based on who sent the message
+                    const groupClass = currentSender == userId ? 'sent-group' : 'received-group';
+                    html += `<div class="message-group ${groupClass}">${messageGroup}</div>`;
                     messageGroup = '';
                     currentSender = nextMsg ? nextMsg.sender_id : null;
                 }
