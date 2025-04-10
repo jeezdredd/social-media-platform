@@ -49,7 +49,6 @@ This document provides a detailed overview of the features available in the Soci
 ### User Status
 - Online/offline status indicators
 - Last seen timestamp for offline users
-- User list sorted by online status and unread messages
 
 ## User Profiles
 
