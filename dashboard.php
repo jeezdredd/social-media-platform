@@ -1,4 +1,5 @@
 <?php
+require_once "utils/error_handler.php";
 require_once "auth/auth_check.php";
 require_once "db/database.php";
 require_once "utils/markdown.php";
@@ -12,6 +13,10 @@ if (!$user) {
     session_destroy();
     header("Location: login.php");
     exit;
+}
+
+if (isset($_GET['user_id']) && !userExists($_GET['user_id'])) {
+    handle_404();
 }
 
 $profilePic = $user['profile_pic'] ?: 'upload/default.jpg';

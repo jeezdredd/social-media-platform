@@ -3,12 +3,15 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once __DIR__ . "/../utils/error_handler.php";
+
 // Unauthorized access log
 const SECURITY_LOG = __DIR__ . "/../logs/security.log";
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     logUnauthorizedAccess();
+    handle_403();
 
     // If AJAX request — return JSON with error
     if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
@@ -18,7 +21,7 @@ if (!isset($_SESSION['user_id'])) {
     }
 
     // If not AJAX — redirect to login page
-    header("Location: login.php");
+    header("Location: /dmuk-coursework/login.php");
     exit;
 }
 

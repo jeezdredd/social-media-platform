@@ -1,0 +1,8 @@
+ErrorDocument 404 /dmuk-coursework/errors/404.php
+ErrorDocument 403 /dmuk-coursework/errors/403.php
+ErrorDocument 500 /dmuk-coursework/errors/500.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /dmuk-coursework/
+</IfModule>

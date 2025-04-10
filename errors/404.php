@@ -10,7 +10,7 @@
 <div class="error-container">
     <h1>Error 404</h1>
     <p>Page not found...</p>
-    <a href="../posts.php">Return to main page</a>
+    <a href="../posts.php">Return to login page</a>
 </div>
 </body>
 </html>

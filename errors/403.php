@@ -9,8 +9,8 @@
 <body>
 <div class="error-container">
     <h1>Error 403</h1>
-    <p>You don't have access to this page</p>
-    <a href="../posts.php">Return to main page</a>
+    <p>You have to be authorised to view this page.</p>
+    <a href="../login.php">Return to login page</a>
 </div>
 </body>
 </html>
